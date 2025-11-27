@@ -1,7 +1,13 @@
+import Footer from "@/components/Footer";
+import HeroSection from "@/components/HeroSection";
+import Navbar from "@/components/Navbar";
+
 export default function Page() {
   return (
-    <h1 className="text-3xl font-bold text-blue-600 ">
-      Hello, Next.js!
-    </h1>
+    <>
+    <Navbar/>
+    <HeroSection/>
+    <Footer/>
+    </>
   );
 }
