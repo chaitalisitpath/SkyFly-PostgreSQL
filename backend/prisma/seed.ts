@@ -1,32 +1,46 @@
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaService } from './prisma.service';
+import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
-
 async function main() {
-  const hashedPassword = await bcrypt.hash('Admin@123', 10);
+  // 1️⃣ Use PrismaService with adapter
+  const prisma = new PrismaService();
+  await prisma.$connect();
 
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: 'admin@example.com' },
-  });
+  try {
+    const email = 'admin@example.com';
 
-  if (!existingAdmin) {
+    // 2️⃣ Check if admin already exists
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingAdmin) {
+      console.log('Admin already exists');
+      return;
+    }
+
+    // 3️⃣ Hash password
+    const hashedPassword = await bcrypt.hash('Admin@123', 10);
+
+    // 4️⃣ Create admin user with role ADMIN
     await prisma.user.create({
       data: {
-        email: 'admin@example.com',
         name: 'Admin',
+        email,
         password: hashedPassword,
-        role: Role.ADMIN, // assign enum here
+        role: Role.ADMIN,
       },
     });
-    console.log('Admin user created with role ADMIN!');
-  } else {
-    console.log('Admin already exists!');
+
+    console.log('✅ Admin user seeded successfully');
+  } catch (err) {
+    console.error('Seed failed:', err);
+  } finally {
+    // 5️⃣ Disconnect Prisma
+    await prisma.$disconnect();
   }
 }
 
-main()
-  .catch((e) => console.error(e))
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Run the seed
+main();
