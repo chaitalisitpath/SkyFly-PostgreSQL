@@ -1,20 +1,47 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { loginUser } from "../../services/auth.service";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Login attempt with:\nEmail: ${email}\nPassword: ${password}`);
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await loginUser(email, password);
+
+      // Save access token
+      localStorage.setItem("token", data.access_token);
+
+      // Save user info (optional)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect based on role
+      if (data.user.role === "ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
-        {/* Header */}
         <h2 className="text-3xl font-bold text-center text-gray-900">
           Welcome Back
         </h2>
@@ -22,9 +49,11 @@ export default function LoginPage() {
           Sign in to your SkyFly account
         </p>
 
-        {/* Form */}
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Email Address
@@ -39,12 +68,10 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Password
             </label>
-
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -64,7 +91,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Remember + Forgot */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-gray-600">
               <input type="checkbox" className="rounded border-gray-300" />
@@ -79,16 +105,15 @@ export default function LoginPage() {
             </a>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg"
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        {/* Divider */}
         <div className="relative my-6 text-center">
           <span className="px-3 bg-white text-sm text-gray-400 relative z-10">
             Or sign in with
@@ -96,7 +121,6 @@ export default function LoginPage() {
           <div className="absolute inset-x-0 top-1/2 h-px bg-gray-200" />
         </div>
 
-        {/* Social Login */}
         <div className="grid grid-cols-2 gap-3">
           <button className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-100 transition">
             <span className="text-lg">🌐</span>
@@ -108,7 +132,6 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Register */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Don&apos;t have an account?{" "}
           <a
