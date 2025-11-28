@@ -18,8 +18,8 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-6 text-lg">
-            <Link href="#services" className="hover:text-gray-300">
-              Services
+            <Link href="/flights" className="hover:text-gray-300">
+              Flights
             </Link>
             <Link href="#destinations" className="hover:text-gray-300">
               Destinations
