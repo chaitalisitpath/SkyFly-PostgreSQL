@@ -1,111 +1,272 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { registerUser } from "../../services/auth.service";
+
+interface ValidationErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+}
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
+  // Validation functions
+  const validateName = (name: string): string | undefined => {
+    if (!name.trim()) {
+      return "Full name is required";
+    }
+    if (name.trim().length < 2) {
+      return "Name must be at least 2 characters long";
+    }
+    return undefined;
+  };
+
+  const validateEmail = (email: string): string | undefined => {
+    if (!email.trim()) {
+      return "Email is required";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return undefined;
+  };
+
+  const validatePassword = (password: string): string | undefined => {
+    if (!password) {
+      return "Password is required";
+    }
+    if (password.length < 6) {
+      return "Password must be at least 6 characters long";
+    }
+    return undefined;
+  };
+
+  // Form validation
+  const validateForm = (): boolean => {
+    const errors: ValidationErrors = {};
+
+    const nameError = validateName(name);
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+
+    if (nameError) errors.name = nameError;
+    if (emailError) errors.email = emailError;
+    if (passwordError) errors.password = passwordError;
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Real-time validation handlers
+  const handleNameChange = (value: string) => {
+    setName(value);
+    if (validationErrors.name) {
+      const nameError = validateName(value);
+      setValidationErrors(prev => ({
+        ...prev,
+        name: nameError
+      }));
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (validationErrors.email) {
+      const emailError = validateEmail(value);
+      setValidationErrors(prev => ({
+        ...prev,
+        email: emailError
+      }));
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (validationErrors.password) {
+      const passwordError = validatePassword(value);
+      setValidationErrors(prev => ({
+        ...prev,
+        password: passwordError
+      }));
+    }
+  };
+
+  // Form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // Validate form before submitting
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = await registerUser(name, email, password);
+
+      // Save access token
+      localStorage.setItem("token", data.access_token);
+
+      // Save user info (optional)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
-        {/* Header */}
-        <h2 className="text-3xl font-bold text-center text-gray-900">
-          Create an Account
-        </h2>
-        <p className="text-center text-gray-500 mt-2 mb-6">
-          Join SkyFly today
-        </p>
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      
+      {/* LEFT IMAGE SECTION */}
+      <div
+        className="hidden md:flex bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/travel.jpg')",
+        }}
+      >
+        <div className="bg-black/40 w-full h-full flex items-end p-10">
+          <h2 className="text-white text-3xl font-light">
+            Book <span className="font-semibold">SkyFly Airways</span>
+          </h2>
+        </div>
+      </div>
 
-        {/* Form */}
-        <form className="space-y-5">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+      {/* RIGHT REGISTER SECTION */}
+      <div className="flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md px-6">
+          
+          {/* Logo */}
+          <h1 className="text-2xl font-semibold text-blue-900 mb-2">
+            SkyFly
+          </h1>
+          <p className="text-gray-600 mb-8 text-sm">
+            Create your account to start your journey
+          </p>
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Password
-            </label>
-
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Create a password"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? "👁️" : "👁️‍🗨️"}
-              </button>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+              <p className="text-sm">{error}</p>
             </div>
-          </div>
+          )}
 
-          {/* Submit */}
-          <button
-            type="button"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold hover:from-blue-500 hover:to-blue-600 transition shadow-lg"
-          >
-            Sign Up
-          </button>
-        </form>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className={`w-full border px-4 py-2 focus:outline-none ${
+                  validationErrors.name
+                    ? "border-red-500 focus:border-red-700"
+                    : "border-gray-300 focus:border-blue-700"
+                }`}
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                required
+              />
+              {validationErrors.name && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
+              )}
+            </div>
 
-        {/* Divider */}
-        <div className="relative my-6 text-center">
-          <span className="px-3 bg-white text-sm text-gray-400 relative z-10">
-            Or sign up with
-          </span>
-          <div className="absolute inset-x-0 top-1/2 h-px bg-gray-200" />
+            {/* Email */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">
+                Email address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                className={`w-full border px-4 py-2 focus:outline-none ${
+                  validationErrors.email
+                    ? "border-red-500 focus:border-red-700"
+                    : "border-gray-300 focus:border-blue-700"
+                }`}
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                required
+              />
+              {validationErrors.email && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className={`w-full border px-4 py-2 pr-10 focus:outline-none ${
+                    validationErrors.password
+                      ? "border-red-500 focus:border-red-700"
+                      : "border-gray-300 focus:border-blue-700"
+                  }`}
+                  value={password}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? "👁️" : "👁️‍🗨️"}
+                </button>
+              </div>
+              {validationErrors.password && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !name.trim() || !email.trim() || !password}
+              className="w-full bg-blue-900 text-white py-2 font-medium hover:bg-blue-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
+
+          {/* Login link */}
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Already have an account ?{" "}
+            <a
+              href="/login"
+              className="text-blue-800 font-semibold hover:underline"
+            >
+              Login here
+            </a>
+          </p>
+
+          {/* Footer */}
+          <p className="text-xs text-gray-500 mt-8">
+            © SkyFly Airways. All rights reserved.
+          </p>
         </div>
-
-        {/* Social buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-100 transition"
-          >
-            🌐 Google
-          </button>
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-100 transition"
-          >
-            📘 Facebook
-          </button>
-        </div>
-
-        {/* Login link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-blue-600 font-semibold hover:underline"
-          >
-            Login here
-          </a>
-        </p>
       </div>
     </div>
   );

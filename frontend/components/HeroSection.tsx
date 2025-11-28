@@ -57,7 +57,7 @@ export default function HeroSection() {
         />
 
         {/* Hero Box */}
-        <div className="max-w-lg bg-white p-10 rounded-2xl shadow-2xl absolute left-10 top-1/3">
+        <div className="max-w-lg bg-white p-10 rounded-2xl shadow-2xl absolute left-10 top-1/3 mb-20">
           <h1 className="text-4xl font-bold mb-4">
             Discover the World <br /> with our flights.
           </h1>
