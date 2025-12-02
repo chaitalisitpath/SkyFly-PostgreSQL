@@ -8,6 +8,7 @@ import {
   IsEnum,
   IsDefined,
   IsNotEmpty,
+  Matches
 } from 'class-validator';
 import { FlightStatus } from '@prisma/client';
 
@@ -15,6 +16,7 @@ export class CreateFlightDto {
   @IsDefined({ message: 'Flight number is required' })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^[A-Z]{2}\d{2,4}$/)
   flightNumber: string;
 
   @IsDefined({ message: 'Departure airport is required' })
@@ -60,9 +62,6 @@ export class CreateFlightDto {
   @Min(1)
   totalSeats: number;
 
-  @IsDefined({ message: 'Available seats is required' })
-  @IsInt()
-  @Min(0)
   availableSeats: number;
 
   @IsDefined({ message: 'Price is required' })

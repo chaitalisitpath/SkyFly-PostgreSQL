@@ -19,7 +19,8 @@ export class FlightService {
     try {
       return await this.prisma.flight.create({
         data: {
-          ...dto, // ✅ DTO mapped directly
+          ...dto, 
+          availableSeats: dto.totalSeats,
         },
       });
     } catch (error) {
