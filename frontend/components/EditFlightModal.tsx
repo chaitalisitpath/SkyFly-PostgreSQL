@@ -58,6 +58,7 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [generalError, setGeneralError] = useState("");
 
   useEffect(() => {
     if (flight) {
@@ -122,6 +123,7 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
     e.preventDefault();
     if (!validateForm() || !flight) return;
 
+    setGeneralError("");
     setLoading(true);
     try {
       const flightData = {
@@ -142,9 +144,9 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
       await updateFlight(flight.id, flightData);
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating flight:", error);
-      // Handle error, maybe show a toast
+      setGeneralError(error.response?.data?.message || "An error occurred while updating the flight");
     } finally {
       setLoading(false);
     }
@@ -153,16 +155,31 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
   if (!isOpen || !flight) return null;
 
   return (
-    <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Flight</h2>
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+        <div className="p-8">
+          <div className="flex items-center space-x-4 mb-8">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <span className="text-white text-xl">✏️</span>
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900">Edit Flight</h2>
+              <p className="text-slate-600 mt-1">Update flight details and schedule</p>
+            </div>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {generalError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-8 flex items-center space-x-3">
+              <span className="text-red-500 text-lg">⚠️</span>
+              <p className="text-sm font-medium">{generalError}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Flight Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Flight Number *
                 </label>
                 <input
@@ -171,21 +188,21 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   value={formData.flightNumber}
                   onChange={handleInputChange}
                   placeholder="e.g., AI202"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 />
-                {errors.flightNumber && <p className="text-red-500 text-sm mt-1">{errors.flightNumber}</p>}
+                {errors.flightNumber && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.flightNumber}</span></p>}
               </div>
 
               {/* Flight Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Flight Status
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 >
                   {flightStatuses.map((status) => (
                     <option key={status} value={status}>
@@ -196,15 +213,15 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
               </div>
 
               {/* From City */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   From City *
                 </label>
                 <select
                   name="fromCity"
                   value={formData.fromCity}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 >
                   <option value="">Select city</option>
                   {indianCities.map((city) => (
@@ -213,19 +230,19 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                     </option>
                   ))}
                 </select>
-                {errors.fromCity && <p className="text-red-500 text-sm mt-1">{errors.fromCity}</p>}
+                {errors.fromCity && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.fromCity}</span></p>}
               </div>
 
               {/* To City */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   To City *
                 </label>
                 <select
                   name="toCity"
                   value={formData.toCity}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 >
                   <option value="">Select city</option>
                   {indianCities.map((city) => (
@@ -234,12 +251,12 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                     </option>
                   ))}
                 </select>
-                {errors.toCity && <p className="text-red-500 text-sm mt-1">{errors.toCity}</p>}
+                {errors.toCity && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.toCity}</span></p>}
               </div>
 
               {/* Departure Airport */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Departure Airport *
                 </label>
                 <select
@@ -247,7 +264,7 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   value={formData.departureAirport}
                   onChange={handleInputChange}
                   disabled={!formData.fromCity}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white disabled:bg-slate-50 disabled:text-slate-400"
                 >
                   <option value="">Select airport</option>
                   {formData.fromCity &&
@@ -257,12 +274,12 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                       </option>
                     ))}
                 </select>
-                {errors.departureAirport && <p className="text-red-500 text-sm mt-1">{errors.departureAirport}</p>}
+                {errors.departureAirport && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.departureAirport}</span></p>}
               </div>
 
               {/* Arrival Airport */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Arrival Airport *
                 </label>
                 <select
@@ -270,7 +287,7 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   value={formData.arrivalAirport}
                   onChange={handleInputChange}
                   disabled={!formData.toCity}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white disabled:bg-slate-50 disabled:text-slate-400"
                 >
                   <option value="">Select airport</option>
                   {formData.toCity &&
@@ -280,54 +297,54 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                       </option>
                     ))}
                 </select>
-                {errors.arrivalAirport && <p className="text-red-500 text-sm mt-1">{errors.arrivalAirport}</p>}
+                {errors.arrivalAirport && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.arrivalAirport}</span></p>}
               </div>
 
               {/* Departure Terminal */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Departure Terminal *
                 </label>
                 <select
                   name="departureAirportTerminal"
                   value={formData.departureAirportTerminal}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 >
                   <option value="">Select terminal</option>
                   {terminals.map((terminal) => (
                     <option key={terminal} value={terminal}>
-                      {terminal}
+                      Terminal {terminal}
                     </option>
                   ))}
                 </select>
-                {errors.departureAirportTerminal && <p className="text-red-500 text-sm mt-1">{errors.departureAirportTerminal}</p>}
+                {errors.departureAirportTerminal && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.departureAirportTerminal}</span></p>}
               </div>
 
               {/* Arrival Terminal */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Arrival Terminal *
                 </label>
                 <select
                   name="arrivalAirportTerminal"
                   value={formData.arrivalAirportTerminal}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 >
                   <option value="">Select terminal</option>
                   {terminals.map((terminal) => (
                     <option key={terminal} value={terminal}>
-                      {terminal}
+                      Terminal {terminal}
                     </option>
                   ))}
                 </select>
-                {errors.arrivalAirportTerminal && <p className="text-red-500 text-sm mt-1">{errors.arrivalAirportTerminal}</p>}
+                {errors.arrivalAirportTerminal && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.arrivalAirportTerminal}</span></p>}
               </div>
 
               {/* Departure Date & Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Departure Date & Time *
                 </label>
                 <input
@@ -335,14 +352,14 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   name="departureTime"
                   value={formData.departureTime}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 />
-                {errors.departureTime && <p className="text-red-500 text-sm mt-1">{errors.departureTime}</p>}
+                {errors.departureTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.departureTime}</span></p>}
               </div>
 
               {/* Arrival Date & Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Arrival Date & Time *
                 </label>
                 <input
@@ -350,14 +367,14 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   name="arrivalTime"
                   value={formData.arrivalTime}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 />
-                {errors.arrivalTime && <p className="text-red-500 text-sm mt-1">{errors.arrivalTime}</p>}
+                {errors.arrivalTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.arrivalTime}</span></p>}
               </div>
 
               {/* Total Seats */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Total Seats *
                 </label>
                 <input
@@ -366,14 +383,14 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   value={formData.totalSeats}
                   onChange={handleInputChange}
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 />
-                {errors.totalSeats && <p className="text-red-500 text-sm mt-1">{errors.totalSeats}</p>}
+                {errors.totalSeats && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.totalSeats}</span></p>}
               </div>
 
               {/* Ticket Price */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
                   Ticket Price (₹) *
                 </label>
                 <input
@@ -383,27 +400,36 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 />
-                {errors.ticketPrice && <p className="text-red-500 text-sm mt-1">{errors.ticketPrice}</p>}
+                {errors.ticketPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.ticketPrice}</span></p>}
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end space-x-4 pt-6">
+            <div className="flex justify-end space-x-4 pt-8 border-t border-slate-200">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="px-6 py-3 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
               >
-                {loading ? "Updating..." : "Update Flight"}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  <>
+                   <span>Update Flight</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

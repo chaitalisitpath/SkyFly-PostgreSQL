@@ -36,3 +36,21 @@ export const deleteFlight = async (id: number): Promise<void> => {
   await api.delete(`/flights/${id}`);
 };
 
+export interface SearchFlightsParams {
+  fromCity?: string;
+  toCity?: string;
+  departureTime?: string;
+  arrivalTime?: string;
+}
+
+export const searchFlights = async (params: SearchFlightsParams): Promise<Flight[]> => {
+  const queryParams = new URLSearchParams();
+  if (params.fromCity) queryParams.append('fromCity', params.fromCity);
+  if (params.toCity) queryParams.append('toCity', params.toCity);
+  if (params.departureTime) queryParams.append('departureTime', params.departureTime);
+  if (params.arrivalTime) queryParams.append('arrivalTime', params.arrivalTime);
+
+  const response = await api.get(`/flights/search?${queryParams.toString()}`);
+  return response.data;
+};
+

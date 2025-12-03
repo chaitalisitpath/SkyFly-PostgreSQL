@@ -2,8 +2,30 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+
+const popularCities = [
+  "Delhi",
+  "Mumbai",
+  "Bangalore",
+  "Chennai",
+  "Kolkata",
+  "Hyderabad",
+  "Pune",
+  "Ahmedabad",
+  "Jaipur",
+  "Lucknow",
+  "Dubai",
+  "London",
+  "Singapore",
+  "Paris",
+  "Tokyo",
+  "New York",
+];
 
 export default function HeroSection() {
+  const router = useRouter();
+
   const destinations = [
     { name: "Dubai", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80" },
     { name: "London", img: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80" },
@@ -19,6 +41,47 @@ export default function HeroSection() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const autoplayRef = useRef<number | null>(null);
+
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const fromCity = formData.get('fromCity') as string;
+    const toCity = formData.get('toCity') as string;
+    const departureDate = formData.get('departureDate') as string;
+
+    // Build query params
+    const params = new URLSearchParams();
+    if (fromCity) params.append('fromCity', fromCity);
+    if (toCity) params.append('toCity', toCity);
+    if (departureDate) params.append('departureTime', departureDate);
+
+    // First call backend search endpoint to check availability
+    try {
+      const base = 'http://localhost:3001/flights/search';
+      const url = `${base}?${params.toString()}`;
+      const res = await fetch(url, { method: 'GET' });
+      const data = await res.json();
+
+      // If backend returns array of flights
+      if (Array.isArray(data) && data.length === 0) {
+        alert('No flight available');
+        return;
+      }
+
+      // If backend returns object with message or empty result
+      if (!res.ok) {
+        const msg = (data && data.message) || 'No flight available';
+        alert(msg);
+        return;
+      }
+
+      // Otherwise navigate to results page with the same query
+      router.push(`/flights?${params.toString()}`);
+    } catch (err) {
+      console.error(err);
+      alert('No flight available');
+    }
+  };
 
   useEffect(() => {
     if (destinations.length <= visibleCount) return;
@@ -63,45 +126,54 @@ export default function HeroSection() {
           </h1>
           <p className="text-gray-500 mb-6">Plan your next adventure with ease.</p>
 
-          <form>
+          <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block font-semibold mb-1">Takeoff</label>
-                <select className="w-full border border-gray-300 rounded-lg px-3 py-2">
-                  <option>New Delhi</option>
-                  <option>Mumbai</option>
-                  <option>Bengaluru</option>
+                <label className="block font-semibold mb-1">From City</label>
+                <select
+                  name="fromCity"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select departure city</option>
+                  {popularCities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
-                <label className="block font-semibold mb-1">Arrival</label>
-                <select className="w-full border border-gray-300 rounded-lg px-3 py-2">
-                  <option>Dubai</option>
-                  <option>London</option>
-                  <option>Singapore</option>
+                <label className="block font-semibold mb-1">To City</label>
+                <select
+                  name="toCity"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select destination city</option>
+                  {popularCities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <label className="block font-semibold mb-1">Departure Date</label>
-                <input
-                  type="date"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Return Date</label>
-                <input
-                  type="date"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                />
-              </div>
+            <div className="mb-6">
+              <label className="block font-semibold mb-1">Departure Date</label>
+              <input
+                type="date"
+                name="departureDate"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               />
             </div>
 
-            <button className="w-full bg-blue-600 text-white py-3 text-lg rounded-lg hover:bg-blue-700 transition">
-              Search
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-3 text-lg rounded-lg hover:bg-blue-700 transition duration-200"
+            >
+              Search Flights
             </button>
           </form>
         </div>

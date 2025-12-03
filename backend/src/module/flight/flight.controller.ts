@@ -7,9 +7,11 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { FlightService } from './flight.service';
 import { CreateFlightDto } from './dto/flight.dto';
+import { SearchFlightDto } from './dto/search-flight.dto';
 
 @Controller('flights')
 export class FlightController {
@@ -18,6 +20,11 @@ export class FlightController {
   @Get()
   getAll() {
     return this.flightService.getAllFlights();
+  }
+
+  @Get('search')
+  search(@Query() searchDto: SearchFlightDto) {
+    return this.flightService.searchFlights(searchDto);
   }
 
   @Get(':id')

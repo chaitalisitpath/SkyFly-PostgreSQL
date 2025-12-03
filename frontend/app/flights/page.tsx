@@ -1,17 +1,49 @@
-"use client"; 
+"use client";
 import Navbar from "@/components/Navbar";
-import { getFlights, Flight } from "@/services/flight.service";
+import { getFlights, searchFlights, Flight, SearchFlightsParams } from "@/services/flight.service";
 import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function Flights() {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
-    getFlights()
-      .then(setFlights)
-      .catch((err) => console.error("Failed to fetch flights:", err));
-  }, []);
+    const fetchFlights = async () => {
+      setIsSearching(true);
+      try {
+        const fromCity = searchParams.get('fromCity');
+        const toCity = searchParams.get('toCity');
+        const departureTime = searchParams.get('departureTime');
+        const arrivalTime = searchParams.get('arrivalTime');
+
+        const hasSearchParams = fromCity || toCity || departureTime || arrivalTime;
+
+        if (hasSearchParams) {
+          const searchCriteria: SearchFlightsParams = {
+            fromCity: fromCity || undefined,
+            toCity: toCity || undefined,
+            departureTime: departureTime || undefined,
+            arrivalTime: arrivalTime || undefined,
+          };
+          const results = await searchFlights(searchCriteria);
+          setFlights(results);
+        } else {
+          const results = await getFlights();
+          setFlights(results);
+        }
+      } catch (err) {
+        console.error("Failed to fetch flights:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    fetchFlights();
+  }, [searchParams]);
 
   // Calculate duration string
   const getDuration = (departure: string, arrival: string) => {
@@ -23,138 +55,163 @@ export default function Flights() {
     return `${hours}h ${minutes}m`;
   };
 
+
   return (
     <>
       <Navbar />
-      <div className="max-w-6xl mx-auto mt-10 space-y-4 px-4">
-        {flights.map((flight) => (
-          <div
-            key={flight.id}
-            className="bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col md:flex-row items-center md:justify-between gap-6 hover:scale-105"
-          >
-            {/* Flight Info */}
-            <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-              {/* Airline */}
-              <div className="flex items-center gap-3 md:w-32">
-                <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl">
-                  ✈️
-                </div>
-                <div>
-                  <p className="font-bold text-gray-800">{flight.flightNumber}</p>
-                  {/* <p className="text-sm text-gray-500">{flight.flightNumber.slice(0, 2)} Airlines</p> */}
-                </div>
-              </div>
-          </div>
-          <div className="flex">
-              {/* From */}
-              <div className="flex flex-col text-center md:text-left gap-2 md:w-40">
-                <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <span className="text-2xl"></span>
-                  <p className="text-2xl font-bold text-gray-800">{new Date(flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                </div>
-                <p className="text-sm font-medium text-gray-600 text-center">{flight.fromCity}</p>
-              </div>
+      <div className="max-w-7xl mx-auto mt-8 px-4">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Available Flights</h1>
 
-              {/* Duration */}
-              <div className="flex flex-col items-center gap-2 md:w-32">
-                <p className="text-sm font-semibold text-gray-700 mb-2">{getDuration(flight.departureTime, flight.arrivalTime)}</p>
-                <div className="relative flex items-center">
-                  <div className="h-1 w-20 bg-gradient-to-r from-green-400 to-blue-400 rounded"></div>
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bg-white border-2 border-blue-400 rounded-full p-1">
-                    <span className="text-sm">✈️</span>
+        <div className="space-y-6">
+          {flights.map((flight) => (
+            <div
+              key={flight.id}
+              className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                {/* Airline */}
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="font-semibold text-gray-900">{flight.flightNumber}</p>
                   </div>
                 </div>
-              </div>
 
-              {/* To */}
-              <div className="flex flex-col text-center md:text-left gap-2 md:w-40">
-                <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <span className="text-2xl"></span>
-                  <p className="text-2xl font-bold text-gray-800">{new Date(flight.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                {/* Flight Route */}
+                <div className="flex items-center justify-center md:justify-start space-x-4">
+                  {/* Departure */}
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-gray-900">{new Date(flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-sm text-gray-600">{flight.fromCity}</p>
+                  </div>
+
+                  {/* Duration Line */}
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center space-x-2">
+                      <div className="h-px w-8 bg-gray-300"></div>
+                      <span className="text-gray-400">→</span>
+                      <div className="h-px w-8 bg-gray-300"></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{getDuration(flight.departureTime, flight.arrivalTime)}</p>
+                  </div>
+
+                  {/* Arrival */}
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-gray-900">{new Date(flight.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-sm text-gray-600">{flight.toCity}</p>
+                  </div>
                 </div>
-                <p className="text-sm font-medium text-gray-600 text-center">{flight.toCity}</p>
+
+                {/* Price */}
+                <div className="text-center md:text-right">
+                  <p className="text-2xl font-bold text-gray-900">₹{flight.price.toLocaleString()}</p>
+                </div>
+
+                {/* Action: Book is primary, More details is a link */}
+                <div className="text-center md:text-right flex flex-col items-center md:items-end gap-2">
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-200"
+                    onClick={() => router.push(`/book?flightId=${encodeURIComponent(flight.id)}`)}
+                  >
+                    Book Flight
+                  </button>
+                  <a
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setSelectedFlight(flight); }}
+                    className="text-sm text-blue-600 hover:underline mt-1"
+                  >
+                    More details
+                  </a>
+                </div>
               </div>
             </div>
-
-            {/* Price & Actions */}
-            <div className="flex flex-col items-center md:items-end gap-4">
-              <p className="text-3xl font-bold text-blue-600">₹{flight.price.toLocaleString()}</p>
-              <button
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-full text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300"
-                onClick={() => setSelectedFlight(flight)}
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Flight Details Modal */}
       {selectedFlight && (
-  <div className="fixed inset-0 flex items-center justify-center z-50">
-    {/* Blurred semi-transparent background */}
-    <div
-      className="absolute inset-0 bg-white/30 backdrop-blur-sm"
-      onClick={() => setSelectedFlight(null)}
-    ></div>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Flight {selectedFlight.flightNumber}
+                </h2>
+                <button
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  onClick={() => setSelectedFlight(null)}
+                >
+                  ×
+                </button>
+              </div>
 
-    {/* Modal card */}
-    <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 z-10 border border-gray-200">
-      {/* Close button */}
-      <button
-        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-lg font-bold"
-        onClick={() => setSelectedFlight(null)}
-      >
-        ✕
-      </button>
+              {/* Flight Details */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">From</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedFlight.fromCity}</p>
+                    <p className="text-sm text-gray-600">{new Date(selectedFlight.departureTime).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">To</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedFlight.toCity}</p>
+                    <p className="text-sm text-gray-600">{new Date(selectedFlight.arrivalTime).toLocaleString()}</p>
+                  </div>
+                </div>
 
-      {/* Modal title */}
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">
-        {selectedFlight.flightNumber} Details
-      </h2>
+                <div className="border-t pt-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="font-medium text-gray-500">Departure Terminal</p>
+                      <p className="text-gray-900">{selectedFlight.departureAirportTerminal}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Arrival Terminal</p>
+                      <p className="text-gray-900">{selectedFlight.arrivalAirportTerminal}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Total Seats</p>
+                      <p className="text-gray-900">{selectedFlight.totalSeats}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Available Seats</p>
+                      <p className="text-gray-900">{selectedFlight.availableSeats}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Status</p>
+                      <p className="text-gray-900">{selectedFlight.status}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Duration</p>
+                      <p className="text-gray-900">{getDuration(selectedFlight.departureTime, selectedFlight.arrivalTime)}</p>
+                    </div>
+                  </div>
+                </div>
 
-      {/* Flight details */}
-      <div className="space-y-3 text-gray-700 text-sm">
-        <p>
-          <strong>Departure:</strong> {selectedFlight.fromCity} -{" "}
-          {new Date(selectedFlight.departureTime).toLocaleString()}
-        </p>
-        <p>
-          <strong>Arrival:</strong> {selectedFlight.toCity} -{" "}
-          {new Date(selectedFlight.arrivalTime).toLocaleString()}
-        </p>
-        <p>
-          <strong>Departure Airport Terminal:</strong> {selectedFlight.departureAirportTerminal}
-        </p>
-        <p>
-          <strong>Arrival Airport Terminal:</strong> {selectedFlight.arrivalAirportTerminal}
-        </p>
-        <p>
-          <strong>Total Seats:</strong> {selectedFlight.totalSeats}
-        </p>
-        <p>
-          <strong>Available Seats:</strong> {selectedFlight.availableSeats}
-        </p>
-        <p>
-          <strong>Status:</strong> {selectedFlight.status}
-        </p>
-        <p>
-          <strong>Ticket Price:</strong> ₹{selectedFlight.price.toLocaleString()}
-        </p>
-        <p>
-          <strong>Duration:</strong>{" "}
-          {getDuration(selectedFlight.departureTime, selectedFlight.arrivalTime)}
-        </p>
-      </div>
-
-      {/* Book button */}
-      <button className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition">
-        Book Flight
-      </button>
-    </div>
-  </div>
-)}
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Price per ticket</p>
+                      <p className="text-2xl font-bold text-gray-900">₹{selectedFlight.price.toLocaleString()}</p>
+                    </div>
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-200"
+                      onClick={() => {
+                        setSelectedFlight(null);
+                        router.push(`/book?flightId=${encodeURIComponent(selectedFlight.id)}`);
+                      }}
+                    >
+                      Book Flight
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </>
   );

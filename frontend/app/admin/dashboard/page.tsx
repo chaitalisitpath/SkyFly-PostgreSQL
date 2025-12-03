@@ -27,10 +27,14 @@ export default function AdminDashboardPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 text-lg">Loading admin dashboard...</p>
+                    <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                        <span className="text-white text-2xl font-bold">SF</span>
+                    </div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 border-t-blue-600 mx-auto mb-4"></div>
+                    <p className="text-slate-700 text-xl font-semibold mb-2">Loading SkyFly Admin</p>
+                    <p className="text-slate-500">Setting up your dashboard...</p>
                 </div>
             </div>
         );
@@ -44,19 +48,26 @@ export default function AdminDashboardPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
             {/* Header */}
-            <header className="bg-red-600 shadow-sm">
+            <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl border-b border-slate-700">
                 <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center">
-                            <h1 className="text-2xl font-bold text-white">SkyFly Admin</h1>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="text-right">
-                                <p className="text-xs text-red-100">Administrator</p>
-                                <p className="text-sm font-medium text-white">Admin User</p>
+                    <div className="flex justify-between items-center h-20">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                <span className="text-white font-bold text-lg">SF</span>
                             </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-white">SkyFly Admin</h1>
+                                <p className="text-xs text-slate-300">Management Dashboard</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-6">
+                            <div className="text-right">
+                                <p className="text-xs text-slate-400">Administrator</p>
+                                <p className="text-sm font-semibold text-white">Admin User</p>
+                            </div>
+                            <div className="w-px h-8 bg-slate-600"></div>
                             <Logout />
                         </div>
                     </div>
@@ -67,15 +78,15 @@ export default function AdminDashboardPage() {
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Tab Navigation */}
                 <div className="mb-8">
-                    <nav className="flex space-x-8" aria-label="Tabs">
+                    <nav className="flex space-x-2 bg-white rounded-xl p-2 shadow-lg border border-slate-200" aria-label="Tabs">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                                className={`flex items-center space-x-3 py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200 ${
                                     activeTab === tab.id
-                                        ? 'border-red-500 text-red-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md transform scale-105'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                 }`}
                             >
                                 <span className="text-lg">{tab.icon}</span>
@@ -86,7 +97,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Tab Content */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                     {activeTab === 'overview' && <AdminOverviewTab />}
                     {activeTab === 'flights' && <FlightsManagementTab />}
                     {activeTab === 'users' && <UsersManagementTab />}
@@ -101,98 +112,142 @@ export default function AdminDashboardPage() {
 function AdminOverviewTab() {
     return (
         <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard Overview</h2>
+            <div className="mb-8">
+                <h2 className="text-3xl font-bold text-slate-900">Dashboard Overview</h2>
+                <p className="text-slate-600 mt-1">Monitor your flight operations and business metrics</p>
+            </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-red-100 text-sm font-medium">Total Flights</p>
-                            <p className="text-3xl font-bold">24</p>
+                            <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Total Flights</p>
+                            <p className="text-4xl font-bold mt-2">24</p>
+                            <p className="text-blue-200 text-xs mt-1">Active routes</p>
                         </div>
-                        <div className="text-4xl">✈️</div>
+                        <div className="text-5xl opacity-80">✈️</div>
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-blue-100 text-sm font-medium">Total Users</p>
-                            <p className="text-3xl font-bold">1,247</p>
+                            <p className="text-emerald-100 text-sm font-medium uppercase tracking-wide">Total Users</p>
+                            <p className="text-4xl font-bold mt-2">1,247</p>
+                            <p className="text-emerald-200 text-xs mt-1">Registered accounts</p>
                         </div>
-                        <div className="text-4xl">👥</div>
+                        <div className="text-5xl opacity-80">👥</div>
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-green-100 text-sm font-medium">Total Bookings</p>
-                            <p className="text-3xl font-bold">3,492</p>
+                            <p className="text-amber-100 text-sm font-medium uppercase tracking-wide">Total Bookings</p>
+                            <p className="text-4xl font-bold mt-2">3,492</p>
+                            <p className="text-amber-200 text-xs mt-1">This month</p>
                         </div>
-                        <div className="text-4xl">🎫</div>
+                        <div className="text-5xl opacity-80">🎫</div>
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-purple-100 text-sm font-medium">Revenue</p>
-                            <p className="text-3xl font-bold">₹2.4M</p>
+                            <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Revenue</p>
+                            <p className="text-4xl font-bold mt-2">₹2.4M</p>
+                            <p className="text-purple-200 text-xs mt-1">Monthly earnings</p>
                         </div>
-                        <div className="text-4xl">💰</div>
+                        <div className="text-5xl opacity-80">💰</div>
                     </div>
                 </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Bookings</h3>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">SF-202: Delhi → Mumbai</p>
-                                <p className="text-xs text-gray-500">John Doe • 2 hours ago</p>
-                            </div>
-                            <span className="text-sm font-semibold text-green-600">₹8,500</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
+                    <div className="flex items-center space-x-3 mb-6">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                            <span className="text-white text-lg">📋</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">SF-305: Mumbai → Bangalore</p>
-                                <p className="text-xs text-gray-500">Jane Smith • 4 hours ago</p>
+                        <h3 className="text-xl font-bold text-slate-900">Recent Bookings</h3>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <span className="text-blue-600 text-sm">✈️</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-900">SF-202: Delhi → Mumbai</p>
+                                    <p className="text-xs text-slate-500">John Doe • 2 hours ago</p>
+                                </div>
                             </div>
-                            <span className="text-sm font-semibold text-green-600">₹6,200</span>
+                            <span className="text-lg font-bold text-emerald-600">₹8,500</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">SF-156: Delhi → Chennai</p>
-                                <p className="text-xs text-gray-500">Mike Johnson • 6 hours ago</p>
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                    <span className="text-emerald-600 text-sm">✈️</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-900">SF-305: Mumbai → Bangalore</p>
+                                    <p className="text-xs text-slate-500">Jane Smith • 4 hours ago</p>
+                                </div>
                             </div>
-                            <span className="text-sm font-semibold text-green-600">₹9,500</span>
+                            <span className="text-lg font-bold text-emerald-600">₹6,200</span>
+                        </div>
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <span className="text-purple-600 text-sm">✈️</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-900">SF-156: Delhi → Chennai</p>
+                                    <p className="text-xs text-slate-500">Mike Johnson • 6 hours ago</p>
+                                </div>
+                            </div>
+                            <span className="text-lg font-bold text-emerald-600">₹9,500</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Flight API</span>
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Online</span>
+                <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
+                    <div className="flex items-center space-x-3 mb-6">
+                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                            <span className="text-white text-lg">⚙️</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Booking System</span>
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Online</span>
+                        <h3 className="text-xl font-bold text-slate-900">System Status</h3>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm font-medium text-slate-700">Flight API</span>
+                            </div>
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Online</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Payment Gateway</span>
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Maintenance</span>
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm font-medium text-slate-700">Booking System</span>
+                            </div>
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Online</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Database</span>
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Online</span>
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm font-medium text-slate-700">Payment Gateway</span>
+                            </div>
+                            <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">Maintenance</span>
+                        </div>
+                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm font-medium text-slate-700">Database</span>
+                            </div>
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Online</span>
                         </div>
                     </div>
                 </div>
@@ -262,106 +317,137 @@ function FlightsManagementTab() {
 
     return (
         <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Flight Management</h2>
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-slate-900">Flight Management</h2>
+                    <p className="text-slate-600 mt-1">Manage your flight schedules, routes, and operations</p>
+                </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2"
                 >
-                    Add New Flight
+                    <span>✈️</span>
+                    <span>Add New Flight</span>
                 </button>
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                    <span className="ml-3 text-gray-600">Loading flights...</span>
+                <div className="flex items-center justify-center py-16">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+                        <p className="text-slate-600 text-lg font-medium">Loading flights...</p>
+                        <p className="text-slate-400 text-sm">Please wait while we fetch your data</p>
+                    </div>
                 </div>
             ) : flights.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-6 text-center">
-                    <div className="text-6xl mb-4">✈️</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Flights Found</h3>
-                    <p className="text-gray-500 mb-4">Start by adding your first flight</p>
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
+                    <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <span className="text-4xl">✈️</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">No Flights Found</h3>
+                    <p className="text-slate-600 mb-6 max-w-md mx-auto">Start building your flight network by adding your first flight. Create routes, set schedules, and manage your aviation operations.</p>
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                    >
+                        Add Your First Flight
+                    </button>
                 </div>
             ) : (
-                <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+                <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Flight Number
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Route
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Departure
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Arrival
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Seats
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Price
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white divide-y divide-slate-100">
                                 {flights.map((flight) => (
-                                    <tr key={flight.id} className="hover:bg-gray-50">
+                                    <tr key={flight.id} className="hover:bg-slate-50 transition-colors duration-150">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{flight.flightNumber}</div>
+                                            <div className="flex items-center">
+                                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                    <span className="text-blue-600 text-sm font-bold">✈️</span>
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-900">{flight.flightNumber}</div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{flight.fromCity} → {flight.toCity}</div>
-                                            <div className="text-xs text-gray-500">
+                                            <div className="text-sm font-semibold text-slate-900">{flight.fromCity} → {flight.toCity}</div>
+                                            <div className="text-xs text-slate-500 flex items-center">
+                                                <span className="inline-block w-2 h-2 bg-slate-300 rounded-full mr-2"></span>
                                                 T{flight.departureAirportTerminal} → T{flight.arrivalAirportTerminal}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{formatDateTime(flight.departureTime)}</div>
-                                            <div className="text-xs text-gray-500">{flight.departureAirport.split('(')[0].trim()}</div>
+                                            <div className="text-sm font-medium text-slate-900">{formatDateTime(flight.departureTime)}</div>
+                                            <div className="text-xs text-slate-500">{flight.departureAirport.split('(')[0].trim()}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{formatDateTime(flight.arrivalTime)}</div>
-                                            <div className="text-xs text-gray-500">{flight.arrivalAirport.split('(')[0].trim()}</div>
+                                            <div className="text-sm font-medium text-slate-900">{formatDateTime(flight.arrivalTime)}</div>
+                                            <div className="text-xs text-slate-500">{flight.arrivalAirport.split('(')[0].trim()}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(flight.status)}`}>
+                                            <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(flight.status)}`}>
                                                 {flight.status.replace('_', ' ')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {flight.availableSeats}/{flight.totalSeats}
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-semibold text-slate-900">{flight.availableSeats}/{flight.totalSeats}</div>
+                                            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1">
+                                                <div
+                                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full"
+                                                    style={{ width: `${(flight.availableSeats / flight.totalSeats) * 100}%` }}
+                                                ></div>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            ₹{flight.price}
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-lg font-bold text-emerald-600">₹{flight.price}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedFlight(flight);
-                                                    setIsEditModalOpen(true);
-                                                }}
-                                                className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteFlight(flight.id)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                Delete
-                                            </button>
+                                            <div className="flex justify-end space-x-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedFlight(flight);
+                                                        setIsEditModalOpen(true);
+                                                    }}
+                                                    className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                >
+                                                    <span>✏️</span>
+                                                    <span>Edit</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteFlight(flight.id)}
+                                                    className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                >
+                                                    <span>🗑️</span>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -391,18 +477,38 @@ function FlightsManagementTab() {
 function UsersManagementTab() {
     return (
         <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-                <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                    Add New User
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-slate-900">User Management</h2>
+                    <p className="text-slate-600 mt-1">Manage user accounts, roles, and permissions</p>
+                </div>
+                <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2 opacity-60 cursor-not-allowed">
+                    <span>👤</span>
+                    <span>Add New User</span>
                 </button>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <div className="text-6xl mb-4">👥</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">User Management System</h3>
-                <p className="text-gray-500 mb-4">Manage user accounts, permissions, and access</p>
-                <p className="text-sm text-gray-400">Feature coming soon...</p>
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
+                <div className="w-24 h-24 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span className="text-5xl">👥</span>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">User Management System</h3>
+                <p className="text-slate-600 mb-6 max-w-lg mx-auto">A comprehensive user management dashboard is being developed. You'll be able to manage user accounts, assign roles, set permissions, and monitor user activity.</p>
+                <div className="flex justify-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                        <span className="text-sm text-slate-700">User Profiles</span>
+                    </div>
+                    <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm text-slate-700">Role Management</span>
+                    </div>
+                    <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span className="text-sm text-slate-700">Access Control</span>
+                    </div>
+                </div>
+                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block">🚀 Feature coming soon...</p>
             </div>
         </div>
     );
@@ -412,13 +518,41 @@ function UsersManagementTab() {
 function AnalyticsTab() {
     return (
         <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Analytics Dashboard</h2>
+            <div className="mb-8">
+                <h2 className="text-3xl font-bold text-slate-900">Analytics Dashboard</h2>
+                <p className="text-slate-600 mt-1">Gain insights with comprehensive data visualization and reporting</p>
+            </div>
 
-            <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <div className="text-6xl mb-4">📈</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Analytics</h3>
-                <p className="text-gray-500 mb-4">View detailed reports, charts, and insights</p>
-                <p className="text-sm text-gray-400">Feature coming soon...</p>
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
+                <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span className="text-5xl">📊</span>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">Advanced Analytics Platform</h3>
+                <p className="text-slate-600 mb-6 max-w-lg mx-auto">Get powerful insights with interactive charts, real-time dashboards, and detailed reports on flight performance, revenue trends, and customer behavior.</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <span className="text-2xl">📈</span>
+                        </div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Revenue Analytics</h4>
+                        <p className="text-sm text-slate-600">Track earnings and financial performance</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <span className="text-2xl">✈️</span>
+                        </div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Flight Performance</h4>
+                        <p className="text-sm text-slate-600">Monitor flight metrics and efficiency</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <span className="text-2xl">👥</span>
+                        </div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Customer Insights</h4>
+                        <p className="text-sm text-slate-600">Understand user behavior and preferences</p>
+                    </div>
+                </div>
+                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block">🚀 Feature coming soon...</p>
             </div>
         </div>
     );

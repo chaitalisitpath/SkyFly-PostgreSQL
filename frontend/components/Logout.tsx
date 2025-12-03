@@ -25,7 +25,7 @@ const Logout: React.FC = () => {
 
       {/* Modal Overlay */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-white rounded-2xl shadow-xl flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-xs rounded-2xl shadow-xl flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Confirm Logout
@@ -41,7 +41,7 @@ const Logout: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                 onClick={handleLogout}
               >
                 Logout
