@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { JwtStrategy } from './jwt.strategy';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -10,10 +11,10 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'supersecretkey',
-      signOptions: { expiresIn: '1h' },
+      signOptions: { expiresIn: '15m' },
     }),
   ],
-  providers: [AuthService, PrismaService],
+  providers: [AuthService, JwtStrategy, PrismaService],
   controllers: [AuthController],
   exports: [AuthService], // optional if you want to use it elsewhere
 })

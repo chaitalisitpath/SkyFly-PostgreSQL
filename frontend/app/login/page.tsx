@@ -104,7 +104,7 @@ export default function LoginPage() {
       if (data.user.role === "ADMIN") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/dashboard");
+        router.push("/user/dashboard");
       }
     } catch (err: any) {
       console.error(err);

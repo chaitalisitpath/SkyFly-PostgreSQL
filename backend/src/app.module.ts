@@ -3,9 +3,10 @@ import { DatabaseModule } from './database/database.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthModule } from './module/auth/auth.module';
 import { FlightModule } from './module/flight/flight.module';
+import { BookingModule } from './module/booking/booking.module';
 
 @Module({
-  imports: [DatabaseModule, PrismaModule, AuthModule, FlightModule],
+  imports: [DatabaseModule, PrismaModule, AuthModule, FlightModule, BookingModule],
   controllers: [],
   providers: [],
 })

@@ -110,7 +110,7 @@ export default function Flights() {
                 <div className="text-center md:text-right flex flex-col items-center md:items-end gap-2">
                   <button
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-200"
-                    onClick={() => router.push(`/book?flightId=${encodeURIComponent(flight.id)}`)}
+                    onClick={() => router.push(`/user/book?flightId=${encodeURIComponent(flight.id)}`)}
                   >
                     Book Flight
                   </button>
@@ -200,7 +200,7 @@ export default function Flights() {
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-200"
                       onClick={() => {
                         setSelectedFlight(null);
-                        router.push(`/book?flightId=${encodeURIComponent(selectedFlight.id)}`);
+                        router.push(`/user/book?flightId=${encodeURIComponent(selectedFlight.id)}`);
                       }}
                     >
                       Book Flight

@@ -6,6 +6,7 @@ import Logout from "@/components/Logout";
 import AddFlightModal from "@/components/AddFlightModal";
 import EditFlightModal from "@/components/EditFlightModal";
 import { getFlights, deleteFlight, Flight } from "@/services/flight.service";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 
 type TabType = 'overview' | 'flights' | 'users' | 'analytics';
 
@@ -13,6 +14,9 @@ export default function AdminDashboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+    // Role-based access control - only ADMIN can access this page
+    useRoleAccess('ADMIN');
 
     useEffect(() => {
         // Check if user is logged in
@@ -438,14 +442,12 @@ function FlightsManagementTab() {
                                                     className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                 >
                                                     <span>✏️</span>
-                                                    <span>Edit</span>
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteFlight(flight.id)}
                                                     className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                 >
                                                     <span>🗑️</span>
-                                                    <span>Delete</span>
                                                 </button>
                                             </div>
                                         </td>

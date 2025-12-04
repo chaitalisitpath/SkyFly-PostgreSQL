@@ -14,13 +14,7 @@ const popularCities = [
   "Pune",
   "Ahmedabad",
   "Jaipur",
-  "Lucknow",
-  "Dubai",
-  "London",
-  "Singapore",
-  "Paris",
-  "Tokyo",
-  "New York",
+  "Lucknow"
 ];
 
 export default function HeroSection() {

@@ -22,6 +22,11 @@ export const getFlights = async (): Promise<Flight[]> => {
   return response.data;
 };
 
+export const getFlightById = async (id: number): Promise<Flight> => {
+  const response = await api.get(`/flights/${id}`);
+  return response.data;
+};
+
 export const createFlight = async (flightData: Omit<Flight, 'id' | 'availableSeats'>): Promise<Flight> => {
   const response = await api.post("/flights", flightData);
   return response.data;

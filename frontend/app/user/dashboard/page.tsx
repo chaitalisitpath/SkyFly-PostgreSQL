@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Logout from "@/components/Logout";
+import { getUserBookings } from "@/services/booking.service";
+import { useRoleAccess } from "@/hooks/useRoleAccess";
 
 type TabType = 'dashboard' | 'bookings' | 'profile';
 
@@ -10,10 +12,15 @@ export default function DashboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    // Role-based access control - only USER can access this page
+    useRoleAccess('USER');
 
     useEffect(() => {
         // Check if user is logged in
         const token = localStorage.getItem("token");
+
 
         if (!token) {
             router.push("/login");
@@ -51,7 +58,7 @@ export default function DashboardPage() {
                         <div className="flex items-center space-x-4">
                             <div className="text-right">
                                 <p className="text-sm text-gray-600">Welcome back!</p>
-                                <p className="text-sm font-medium text-gray-900">John Doe</p>
+                                <p className="text-sm font-medium text-gray-900">{user.name}</p>
                             </div>
                             <Logout />
                         </div>
@@ -164,80 +171,108 @@ function DashboardTab() {
 
 // My Bookings Tab
 function BookingsTab() {
-    const mockBookings = [
-        {
-            id: 1,
-            flightNumber: 'SF-202',
-            from: 'Delhi',
-            to: 'Mumbai',
-            departureDate: '2024-12-15',
-            departureTime: '10:30',
-            status: 'Confirmed',
-            price: 8500,
-        },
-        {
-            id: 2,
-            flightNumber: 'SF-305',
-            from: 'Mumbai',
-            to: 'Bangalore',
-            departureDate: '2024-12-20',
-            departureTime: '14:15',
-            status: 'Confirmed',
-            price: 6200,
-        },
-        {
-            id: 3,
-            flightNumber: 'SF-156',
-            from: 'Delhi',
-            to: 'Chennai',
-            departureDate: '2024-12-25',
-            departureTime: '08:45',
-            status: 'Pending',
-            price: 9500,
-        },
-    ];
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const userBookings = await getUserBookings();
+                setBookings(userBookings);
+            } catch (err: any) {
+                console.error('Failed to fetch bookings:', err);
+                setError('Failed to load bookings');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBookings();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="p-8">
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading your bookings...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-8">
+                <div className="text-center py-12">
+                    <div className="text-red-600 mb-4">⚠️ {error}</div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">My Bookings</h2>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <button
+                    onClick={() => router.push('/')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                >
                     Book New Flight
                 </button>
             </div>
 
             <div className="space-y-4">
-                {mockBookings.map((booking) => (
+                {bookings.map((booking) => (
                     <div key={booking.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start">
                             <div className="flex-1">
                                 <div className="flex items-center space-x-4 mb-2">
-                                    <h3 className="text-lg font-semibold text-gray-900">{booking.flightNumber}</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{booking.flight.flightNumber}</h3>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        booking.status === 'Confirmed'
+                                        booking.status === 'CONFIRMED'
                                             ? 'bg-green-100 text-green-800'
+                                            : booking.status === 'BOOKED'
+                                            ? 'bg-blue-100 text-blue-800'
                                             : 'bg-yellow-100 text-yellow-800'
                                     }`}>
                                         {booking.status}
                                     </span>
                                 </div>
-                                <div className="flex items-center space-x-6 text-sm text-gray-600">
+                                <div className="flex items-center space-x-6 text-sm text-gray-600 mb-3">
                                     <div className="flex items-center space-x-2">
                                         <span>📍</span>
-                                        <span>{booking.from} → {booking.to}</span>
+                                        <span>{booking.flight.fromCity} → {booking.flight.toCity}</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <span>📅</span>
-                                        <span>{booking.departureDate}</span>
+                                        <span>{new Date(booking.flight.departureTime).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <span>🕐</span>
-                                        <span>{booking.departureTime}</span>
+                                        <span>{new Date(booking.flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                    <span className="font-medium">Passengers:</span> {booking.passengerCount}
+                                    {booking.passengers && booking.passengers.length > 0 && (
+                                        <span className="ml-2">
+                                            ({booking.passengers.map((p: any) => p.name).join(', ')})
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-lg font-bold text-gray-900">₹{booking.price.toLocaleString()}</p>
+                                <p className="text-lg font-bold text-gray-900">₹{booking.totalAmount.toLocaleString()}</p>
                                 <div className="flex space-x-2 mt-2">
                                     <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                         View Details
@@ -252,12 +287,15 @@ function BookingsTab() {
                 ))}
             </div>
 
-            {mockBookings.length === 0 && (
+            {bookings.length === 0 && (
                 <div className="text-center py-12">
                     <div className="text-6xl mb-4">🎫</div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings yet</h3>
                     <p className="text-gray-500 mb-4">Start your journey by booking your first flight</p>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+                    <button
+                        onClick={() => router.push('/')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+                    >
                         Browse Flights
                     </button>
                 </div>

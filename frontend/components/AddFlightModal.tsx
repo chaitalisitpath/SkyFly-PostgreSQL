@@ -19,13 +19,7 @@ const availableCities = [
   "Pune",
   "Ahmedabad",
   "Jaipur",
-  "Lucknow",
-  "Dubai",
-  "London",
-  "Singapore",
-  "Paris",
-  "Tokyo",
-  "New York",
+  "Lucknow"
 ];
 
 const cityAirports: { [key: string]: string[] } = {
@@ -38,13 +32,7 @@ const cityAirports: { [key: string]: string[] } = {
   Pune: ["Pune International Airport (PNQ)"],
   Ahmedabad: ["Sardar Vallabhbhai Patel International Airport (AMD)"],
   Jaipur: ["Jaipur International Airport (JAI)"],
-  Lucknow: ["Chaudhary Charan Singh International Airport (LKO)"],
-  Dubai: ["Dubai International Airport (DXB)", "Dubai World Central (DWC)"],
-  London: ["Heathrow Airport (LHR)", "Gatwick Airport (LGW)", "Stansted Airport (STN)"],
-  Singapore: ["Singapore Changi Airport (SIN)"],
-  Paris: ["Charles de Gaulle Airport (CDG)", "Orly Airport (ORY)"],
-  Tokyo: ["Narita International Airport (NRT)", "Haneda Airport (HND)"],
-  "New York": ["John F. Kennedy International Airport (JFK)", "Newark Liberty International Airport (EWR)"],
+  Lucknow: ["Chaudhary Charan Singh International Airport (LKO)"]
 };
 
 const terminals = [1, 2, 3, 4];

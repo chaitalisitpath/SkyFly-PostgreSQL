@@ -17,31 +17,74 @@ enum FlightStatus {
   CANCELLED
 }
 
+enum BookingStatus {
+  BOOKED
+  CONFIRMED
+  REJECTED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String?
   email     String   @unique
   password  String
   role      Role     @default(USER)
+  bookings  Booking[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Flight {
-  id          Int      @id @default(autoincrement())
-  flightNumber String @unique
-  departureAirport String
-  arrivalAirport String
-  departureAirportTerminal Int
-  arrivalAirportTerminal Int
-  fromCity String
-  toCity String
-  departureTime DateTime
-  arrivalTime DateTime
-  totalSeats Int
-  availableSeats Int
-  status FlightStatus @default(ON_TIME)
-  price Decimal
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                        Int           @id @default(autoincrement())
+  flightNumber              String        @unique
+  departureAirport          String
+  arrivalAirport            String
+  departureAirportTerminal  Int
+  arrivalAirportTerminal    Int
+  fromCity                  String
+  toCity                    String
+  departureTime             DateTime
+  arrivalTime               DateTime
+  totalSeats                Int
+  availableSeats            Int
+  status                    FlightStatus  @default(ON_TIME)
+  price                     Decimal
+  bookings                  Booking[]
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
 }
+
+model Booking {
+  id               Int            @id @default(autoincrement())
+  userId           Int
+  flightId         Int
+  passengerCount   Int
+  totalAmount      Decimal
+  status           BookingStatus  @default(BOOKED)
+
+  flight           Flight         @relation(fields: [flightId], references: [id])
+  user             User           @relation(fields: [userId], references: [id])
+  passengers       Passenger[]
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Passenger {
+  id          Int      @id @default(autoincrement())
+  bookingId   Int
+  name        String
+  age         Int
+  gender      Gender
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+
+ 
