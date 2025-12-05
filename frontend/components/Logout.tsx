@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { logoutUser } from "@/services/auth.service";
+import { PowerIcon  } from "@heroicons/react/24/outline";
 
 const Logout: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,10 +18,11 @@ const Logout: React.FC = () => {
     <>
       {/* Logout Button */}
       <button
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+        className="p-2 text-slate-100 hover:text-white hover:bg-slate-700 rounded-lg transition-colors duration-200"
         onClick={() => setIsModalOpen(true)}
+        title="Logout"
       >
-        Logout
+        <PowerIcon  className="w-5 h-5" />
       </button>
 
       {/* Modal Overlay */}

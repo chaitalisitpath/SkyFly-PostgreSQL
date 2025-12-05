@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { createFlight } from "@/services/flight.service";
+import { PaperAirplaneIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface AddFlightModalProps {
   isOpen: boolean;
@@ -150,26 +151,28 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
-        <div className="p-8">
-          <div className="flex items-center space-x-4 mb-8">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200">
+        <div className="p-8 border-b border-slate-200 flex-shrink-0">
+          <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl">✈️</span>
+              <PaperAirplaneIcon className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className="text-3xl font-bold text-slate-900">Add New Flight</h2>
               <p className="text-slate-600 mt-1">Create a new flight route and schedule</p>
             </div>
           </div>
+        </div>
 
+        <div className="flex-1 overflow-y-auto p-8">
           {generalError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-8 flex items-center space-x-3">
-              <span className="text-red-500 text-lg">⚠️</span>
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
               <p className="text-sm font-medium">{generalError}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8" id="addFlightForm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Flight Number */}
               <div className="space-y-2">
@@ -184,7 +187,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                   placeholder="e.g., AI202"
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
                 />
-                {errors.flightNumber && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.flightNumber}</span></p>}
+                {errors.flightNumber && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.flightNumber}</span></p>}
               </div>
             {/* Flight Status */}
               <div className="space-y-2">
@@ -222,7 +225,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                     </option>
                   ))}
                 </select>
-                {errors.fromCity && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.fromCity}</span></p>}
+                {errors.fromCity && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.fromCity}</span></p>}
               </div>
 
               {/* To City */}
@@ -243,7 +246,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                     </option>
                   ))}
                 </select>
-                {errors.toCity && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.toCity}</span></p>}
+                {errors.toCity && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.toCity}</span></p>}
               </div>
 
               {/* Departure Airport */}
@@ -266,7 +269,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                       </option>
                     ))}
                 </select>
-                {errors.departureAirport && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.departureAirport}</span></p>}
+                {errors.departureAirport && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.departureAirport}</span></p>}
               </div>
 
               {/* Arrival Airport */}
@@ -289,7 +292,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                       </option>
                     ))}
                 </select>
-                {errors.arrivalAirport && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.arrivalAirport}</span></p>}
+                {errors.arrivalAirport && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.arrivalAirport}</span></p>}
               </div>
 
               {/* Departure Terminal */}
@@ -310,7 +313,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                     </option>
                   ))}
                 </select>
-                {errors.departureAirportTerminal && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.departureAirportTerminal}</span></p>}
+                {errors.departureAirportTerminal && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.departureAirportTerminal}</span></p>}
               </div>
 
               {/* Arrival Terminal */}
@@ -331,7 +334,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                     </option>
                   ))}
                 </select>
-                {errors.arrivalAirportTerminal && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.arrivalAirportTerminal}</span></p>}
+                {errors.arrivalAirportTerminal && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.arrivalAirportTerminal}</span></p>}
               </div>
 
               {/* Departure Date & Time */}
@@ -346,7 +349,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
                 />
-                {errors.departureTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.departureTime}</span></p>}
+                {errors.departureTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.departureTime}</span></p>}
               </div>
 
               {/* Arrival Date & Time */}
@@ -361,7 +364,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
                 />
-                {errors.arrivalTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.arrivalTime}</span></p>}
+                {errors.arrivalTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.arrivalTime}</span></p>}
               </div>
 
               {/* Total Seats */}
@@ -377,7 +380,7 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                   min="1"
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
                 />
-                {errors.totalSeats && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.totalSeats}</span></p>}
+                {errors.totalSeats && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.totalSeats}</span></p>}
               </div>
 
               {/* Ticket Price */}
@@ -394,37 +397,39 @@ export default function AddFlightModal({ isOpen, onClose, onSuccess }: AddFlight
                   step="0.01"
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
                 />
-                {errors.ticketPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><span>⚠️</span><span>{errors.ticketPrice}</span></p>}
+                {errors.ticketPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.ticketPrice}</span></p>}
               </div>
             </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end space-x-4 pt-8 border-t border-slate-200">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-3 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    <span>Adding...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Add Flight</span>
-                  </>
-                )}
-              </button>
-            </div>
           </form>
+        </div>
+
+        <div className="p-8 border-t border-slate-200 flex-shrink-0">
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="addFlightForm"
+              disabled={loading}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Adding...</span>
+                </>
+              ) : (
+                <>
+                  <span>Add Flight</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,23 @@ import EditFlightModal from "@/components/EditFlightModal";
 import { getFlights, deleteFlight, Flight } from "@/services/flight.service";
 import { getAllBookings, updateBookingStatus, Booking } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
+import {
+  ChartBarIcon,
+  PaperAirplaneIcon,
+  TicketIcon,
+  UsersIcon,
+  ChartBarSquareIcon,
+  CurrencyRupeeIcon,
+  ClipboardDocumentListIcon,
+  CogIcon,
+  PencilIcon,
+  TrashIcon,
+  UserIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  RocketLaunchIcon
+} from "@heroicons/react/24/outline";
 
 type TabType = 'overview' | 'flights' | 'bookings' | 'users' | 'analytics';
 
@@ -46,11 +63,11 @@ export default function AdminDashboardPage() {
     }
 
     const tabs = [
-        { id: 'overview' as TabType, label: 'Overview', icon: '📊' },
-        { id: 'flights' as TabType, label: 'Flight Management', icon: '✈️' },
-        { id: 'bookings' as TabType, label: 'Booking Management', icon: '🎫' },
-        { id: 'users' as TabType, label: 'User Management', icon: '👥' },
-        { id: 'analytics' as TabType, label: 'Analytics', icon: '📈' },
+        { id: 'overview' as TabType, label: 'Overview', icon: ChartBarIcon },
+        { id: 'flights' as TabType, label: 'Flight Management', icon: PaperAirplaneIcon },
+        { id: 'bookings' as TabType, label: 'Booking Management', icon: TicketIcon },
+        { id: 'users' as TabType, label: 'User Management', icon: UsersIcon },
+        { id: 'analytics' as TabType, label: 'Analytics', icon: ChartBarSquareIcon },
     ];
 
     return (
@@ -95,7 +112,7 @@ export default function AdminDashboardPage() {
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                 }`}
                             >
-                                <span className="text-lg">{tab.icon}</span>
+                                <tab.icon className="w-5 h-5" />
                                 <span>{tab.label}</span>
                             </button>
                         ))}
@@ -133,7 +150,7 @@ function AdminOverviewTab() {
                             <p className="text-4xl font-bold mt-2">24</p>
                             <p className="text-blue-200 text-xs mt-1">Active routes</p>
                         </div>
-                        <div className="text-5xl opacity-80">✈️</div>
+                        <PaperAirplaneIcon className="w-12 h-12 opacity-80" />
                     </div>
                 </div>
 
@@ -144,7 +161,7 @@ function AdminOverviewTab() {
                             <p className="text-4xl font-bold mt-2">1,247</p>
                             <p className="text-emerald-200 text-xs mt-1">Registered accounts</p>
                         </div>
-                        <div className="text-5xl opacity-80">👥</div>
+                        <UsersIcon className="w-12 h-12 opacity-80" />
                     </div>
                 </div>
 
@@ -155,7 +172,7 @@ function AdminOverviewTab() {
                             <p className="text-4xl font-bold mt-2">3,492</p>
                             <p className="text-amber-200 text-xs mt-1">This month</p>
                         </div>
-                        <div className="text-5xl opacity-80">🎫</div>
+                        <TicketIcon className="w-12 h-12 opacity-80" />
                     </div>
                 </div>
 
@@ -166,7 +183,7 @@ function AdminOverviewTab() {
                             <p className="text-4xl font-bold mt-2">₹2.4M</p>
                             <p className="text-purple-200 text-xs mt-1">Monthly earnings</p>
                         </div>
-                        <div className="text-5xl opacity-80">💰</div>
+                        <CurrencyRupeeIcon className="w-12 h-12 opacity-80" />
                     </div>
                 </div>
             </div>
@@ -176,7 +193,7 @@ function AdminOverviewTab() {
                 <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
                     <div className="flex items-center space-x-3 mb-6">
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                            <span className="text-white text-lg">📋</span>
+                            <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
                         </div>
                         <h3 className="text-xl font-bold text-slate-900">Recent Bookings</h3>
                     </div>
@@ -184,7 +201,7 @@ function AdminOverviewTab() {
                         <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                             <div className="flex items-center space-x-3">
                                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <span className="text-blue-600 text-sm">✈️</span>
+                                    <PaperAirplaneIcon className="w-4 h-4 text-blue-600" />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-slate-900">SF-202: Delhi → Mumbai</p>
@@ -196,7 +213,7 @@ function AdminOverviewTab() {
                         <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                             <div className="flex items-center space-x-3">
                                 <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                    <span className="text-emerald-600 text-sm">✈️</span>
+                                    <PaperAirplaneIcon className="w-4 h-4 text-emerald-600" />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-slate-900">SF-305: Mumbai → Bangalore</p>
@@ -208,7 +225,7 @@ function AdminOverviewTab() {
                         <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                             <div className="flex items-center space-x-3">
                                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <span className="text-purple-600 text-sm">✈️</span>
+                                    <PaperAirplaneIcon className="w-4 h-4 text-purple-600" />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-slate-900">SF-156: Delhi → Chennai</p>
@@ -223,7 +240,7 @@ function AdminOverviewTab() {
                 <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
                     <div className="flex items-center space-x-3 mb-6">
                         <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                            <span className="text-white text-lg">⚙️</span>
+                            <CogIcon className="w-5 h-5 text-white" />
                         </div>
                         <h3 className="text-xl font-bold text-slate-900">System Status</h3>
                     </div>
@@ -333,7 +350,7 @@ function FlightsManagementTab() {
                     onClick={() => setIsAddModalOpen(true)}
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2"
                 >
-                    <span>✈️</span>
+                    <PaperAirplaneIcon className="w-5 h-5" />
                     <span>Add New Flight</span>
                 </button>
             </div>
@@ -349,7 +366,7 @@ function FlightsManagementTab() {
             ) : flights.length === 0 ? (
                 <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
                     <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <span className="text-4xl">✈️</span>
+                        <PaperAirplaneIcon className="w-16 h-16" />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-3">No Flights Found</h3>
                     <p className="text-slate-600 mb-6 max-w-md mx-auto">Start building your flight network by adding your first flight. Create routes, set schedules, and manage your aviation operations.</p>
@@ -362,9 +379,9 @@ function FlightsManagementTab() {
                 </div>
             ) : (
                 <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-auto max-h-110">
                         <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Flight Number
@@ -398,7 +415,7 @@ function FlightsManagementTab() {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                    <span className="text-blue-600 text-sm font-bold">✈️</span>
+                                                    <PaperAirplaneIcon className="w-4 h-4 text-blue-600" />
                                                 </div>
                                                 <div className="text-sm font-bold text-slate-900">{flight.flightNumber}</div>
                                             </div>
@@ -444,13 +461,13 @@ function FlightsManagementTab() {
                                                     }}
                                                     className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                 >
-                                                    <span>✏️</span>
+                                                    <PencilIcon className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteFlight(flight.id)}
                                                     className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                 >
-                                                    <span>🗑️</span>
+                                                    <TrashIcon className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </td>
@@ -488,14 +505,14 @@ function UsersManagementTab() {
                     <p className="text-slate-600 mt-1">Manage user accounts, roles, and permissions</p>
                 </div>
                 <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2 opacity-60 cursor-not-allowed">
-                    <span>👤</span>
+                    <UserIcon className="w-5 h-5" />
                     <span>Add New User</span>
                 </button>
             </div>
 
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
                 <div className="w-24 h-24 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <span className="text-5xl">👥</span>
+                    <UsersIcon className="w-20 h-20" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-3">User Management System</h3>
                 <p className="text-slate-600 mb-6 max-w-lg mx-auto">A comprehensive user management dashboard is being developed. You'll be able to manage user accounts, assign roles, set permissions, and monitor user activity.</p>
@@ -513,7 +530,7 @@ function UsersManagementTab() {
                         <span className="text-sm text-slate-700">Access Control</span>
                     </div>
                 </div>
-                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block">🚀 Feature coming soon...</p>
+                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block"><RocketLaunchIcon className="w-4 h-4 inline mr-1" />Feature coming soon...</p>
             </div>
         </div>
     );
@@ -585,7 +602,7 @@ function BookingsManagementTab() {
         return (
             <div className="p-8">
                 <div className="text-center py-12">
-                    <div className="text-red-600 mb-4">⚠️ {error}</div>
+                    <div className="text-red-600 mb-4 flex items-center"><ExclamationTriangleIcon className="w-5 h-5 mr-2" />{error}</div>
                     <button
                         onClick={() => window.location.reload()}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
@@ -623,16 +640,16 @@ function BookingsManagementTab() {
             {bookings.length === 0 ? (
                 <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
                     <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <span className="text-4xl">🎫</span>
+                        <TicketIcon className="w-16 h-16" />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-3">No Bookings Found</h3>
                     <p className="text-slate-600 mb-6 max-w-md mx-auto">There are no bookings in the system yet. Bookings will appear here once users start making flight reservations.</p>
                 </div>
             ) : (
                 <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto max-h-110">
                         <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Booking ID
@@ -678,7 +695,7 @@ function BookingsManagementTab() {
                                             <div className="text-sm font-medium text-slate-900">{booking.passengerCount}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-lg font-bold text-emerald-600">₹{booking.totalAmount.toLocaleString()}</div>
+                                            <div className="text-md font-bold text-black">₹{booking.totalAmount.toLocaleString()}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(booking.status)}`}>
@@ -696,14 +713,14 @@ function BookingsManagementTab() {
                                                             onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}
                                                             className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                         >
-                                                            <span>✅</span>
+                                                            <CheckCircleIcon className="w-4 h-4" />
                                                             <span>Approve</span>
                                                         </button>
                                                         <button
                                                             onClick={() => handleStatusUpdate(booking.id, 'REJECTED')}
                                                             className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                         >
-                                                            <span>❌</span>
+                                                            <XCircleIcon className="w-4 h-4" />
                                                             <span>Reject</span>
                                                         </button>
                                                     </>
@@ -735,34 +752,34 @@ function AnalyticsTab() {
 
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
                 <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <span className="text-5xl">📊</span>
+                    <ChartBarIcon className="w-20 h-20" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-3">Advanced Analytics Platform</h3>
                 <p className="text-slate-600 mb-6 max-w-lg mx-auto">Get powerful insights with interactive charts, real-time dashboards, and detailed reports on flight performance, revenue trends, and customer behavior.</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                         <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <span className="text-2xl">📈</span>
+                            <ChartBarSquareIcon className="w-8 h-8" />
                         </div>
                         <h4 className="font-semibold text-slate-900 mb-1">Revenue Analytics</h4>
                         <p className="text-sm text-slate-600">Track earnings and financial performance</p>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                         <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <span className="text-2xl">✈️</span>
+                            <PaperAirplaneIcon className="w-8 h-8" />
                         </div>
                         <h4 className="font-semibold text-slate-900 mb-1">Flight Performance</h4>
                         <p className="text-sm text-slate-600">Monitor flight metrics and efficiency</p>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                         <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <span className="text-2xl">👥</span>
+                            <UsersIcon className="w-8 h-8" />
                         </div>
                         <h4 className="font-semibold text-slate-900 mb-1">Customer Insights</h4>
                         <p className="text-sm text-slate-600">Understand user behavior and preferences</p>
                     </div>
                 </div>
-                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block">🚀 Feature coming soon...</p>
+                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block"><RocketLaunchIcon className="w-4 h-4 inline mr-1" />Feature coming soon...</p>
             </div>
         </div>
     );
