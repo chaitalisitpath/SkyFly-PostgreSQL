@@ -76,7 +76,7 @@ export default function DashboardPage() {
                                 <p className="text-sm text-white">Welcome back!</p>
                                 <p className="text-lg font-semibold text-white">{user.name}</p>
                             </div>
-                            <div className="w-px h-8 bg-white"></div>
+                            {/* <div className="w-px h-8 bg-white"></div> */}
                             <Logout />
                         </div>
                     </div>
