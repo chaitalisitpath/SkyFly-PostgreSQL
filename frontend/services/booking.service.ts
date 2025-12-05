@@ -51,3 +51,13 @@ export const getBookingById = async (id: number): Promise<Booking> => {
   const response = await api.get(`/booking/${id}`);
   return response.data;
 };
+
+export const getAllBookings = async (): Promise<Booking[]> => {
+  const response = await api.get('/booking/admin/all');
+  return response.data;
+};
+
+export const updateBookingStatus = async (id: number, status: 'CONFIRMED' | 'REJECTED'): Promise<Booking> => {
+  const response = await api.put(`/booking/admin/${id}/status`, { status });
+  return response.data;
+};

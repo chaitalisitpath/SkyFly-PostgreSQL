@@ -274,7 +274,10 @@ function BookingsTab() {
                             <div className="text-right">
                                 <p className="text-lg font-bold text-gray-900">₹{booking.totalAmount.toLocaleString()}</p>
                                 <div className="flex space-x-2 mt-2">
-                                    <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    <button
+                                        onClick={() => router.push(`/user/booking/${booking.id}`)}
+                                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    >
                                         View Details
                                     </button>
                                     <button className="text-red-600 hover:text-red-800 text-sm font-medium">

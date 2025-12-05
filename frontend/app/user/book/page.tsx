@@ -14,6 +14,8 @@ export default function BookFlight() {
   const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingId, setBookingId] = useState<number | null>(null);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -104,8 +106,14 @@ export default function BookFlight() {
         passengers: passengers,
       };
 
-      await createBooking(bookingData);
-      router.push('/dashboard'); // Redirect to dashboard or success page
+      const bookingResponse = await createBooking(bookingData);
+      setBookingId(bookingResponse.id);
+      setBookingSuccess(true);
+
+      // Redirect to dashboard after 3 seconds
+      setTimeout(() => {
+        router.push('/user/dashboard');
+      }, 3000);
     } catch (err: any) {
       console.error('Booking failed:', err);
       setError(err.response?.data?.message || 'Failed to create booking');
@@ -170,7 +178,8 @@ export default function BookFlight() {
           )}
 
           {/* Progress Steps */}
-          <div className="flex items-center mb-8">
+          {!bookingSuccess && (
+            <div className="flex items-center mb-8">
             <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
                 1
@@ -192,6 +201,36 @@ export default function BookFlight() {
               <span className="ml-2">Confirm</span>
             </div>
           </div>
+          )}
+
+          {/* Success Message */}
+          {bookingSuccess && (
+            <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">
+                    🎉 Booking Successful!
+                  </h3>
+                  <div className="mt-2 text-sm text-green-700">
+                    <p>
+                      Your booking has been created successfully! Booking ID: <span className="font-semibold">#{bookingId}</span>
+                    </p>
+                    <p className="mt-1">
+                      Your booking is currently pending approval. You will receive a confirmation once it's approved by our team.
+                    </p>
+                    <p className="mt-1 text-xs">
+                      Redirecting to your dashboard in a few seconds...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -201,7 +240,7 @@ export default function BookFlight() {
           )}
 
           {/* Step 1: Passenger Quantity */}
-          {step === 1 && flight && (
+          {step === 1 && flight && !bookingSuccess && (
             <form onSubmit={handleQuantitySubmit}>
               <h3 className="text-lg font-semibold mb-4">How many passengers?</h3>
               <div className="mb-4">
@@ -240,7 +279,7 @@ export default function BookFlight() {
           )}
 
           {/* Step 2: Passenger Details */}
-          {step === 2 && (
+          {step === 2 && !bookingSuccess && (
             <form onSubmit={handlePassengersSubmit}>
               <h3 className="text-lg font-semibold mb-4">Passenger Details</h3>
               <div className="space-y-6">
@@ -311,7 +350,7 @@ export default function BookFlight() {
           )}
 
           {/* Step 3: Confirmation */}
-          {step === 3 && flight && (
+          {step === 3 && flight && !bookingSuccess && (
             <div>
               <h3 className="text-lg font-semibold mb-4">Booking Confirmation</h3>
               <div className="bg-gray-50 p-4 rounded-lg mb-6">

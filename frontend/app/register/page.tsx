@@ -124,7 +124,7 @@ export default function RegisterPage() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       // Redirect to dashboard
-      router.push("/dashboard");
+      router.push("/login");
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || "Registration failed. Please try again.");

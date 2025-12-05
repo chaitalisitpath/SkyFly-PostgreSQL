@@ -80,11 +80,18 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden bg-gray-900 px-4 pt-2 pb-4 space-y-2">
           <Link
-            href="#services"
+            href="/flights"
             className="block px-3 py-2 rounded hover:bg-gray-700"
             onClick={() => setIsOpen(false)}
           >
-            Services
+            Flights
+          </Link>
+          <Link
+            href="/booking"
+            className="block px-3 py-2 rounded hover:bg-gray-700"
+            onClick={() => setIsOpen(false)}
+          >
+            Book Flight
           </Link>
           <Link
             href="#destinations"

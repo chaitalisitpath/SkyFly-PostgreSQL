@@ -7,14 +7,17 @@ import { Prisma } from '@prisma/client';
 export class FlightService {
   constructor(private prisma: PrismaService) {}
 
+  //Get all flights
   async getAllFlights() {
     return this.prisma.flight.findMany();
   }
 
+  //Get flights by Id
   async getFlightById(id: number) {
     return this.prisma.flight.findUnique({ where: { id } });
   }
 
+  //Create flight
   async createFlight(dto: CreateFlightDto) {
     // Validate that fromCity and toCity are not the same
     if (dto.fromCity === dto.toCity) {
@@ -46,6 +49,7 @@ export class FlightService {
     }
   }
 
+  //Update flight
   async updateFlight(id: number, dto: Partial<CreateFlightDto>) {
     // Fetch the existing flight to validate against current values
     const existingFlight = await this.prisma.flight.findUnique({ where: { id } });
@@ -75,10 +79,12 @@ export class FlightService {
     });
   }
 
+  //Delete flight
   async deleteFlight(id: number) {
     return this.prisma.flight.delete({ where: { id } });
   }
 
+  //Search flight using from and to city with date
   async searchFlights(searchDto: any) {
     const where: any = {};
 

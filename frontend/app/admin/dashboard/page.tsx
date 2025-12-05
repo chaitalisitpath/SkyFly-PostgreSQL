@@ -6,9 +6,10 @@ import Logout from "@/components/Logout";
 import AddFlightModal from "@/components/AddFlightModal";
 import EditFlightModal from "@/components/EditFlightModal";
 import { getFlights, deleteFlight, Flight } from "@/services/flight.service";
+import { getAllBookings, updateBookingStatus, Booking } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 
-type TabType = 'overview' | 'flights' | 'users' | 'analytics';
+type TabType = 'overview' | 'flights' | 'bookings' | 'users' | 'analytics';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -47,6 +48,7 @@ export default function AdminDashboardPage() {
     const tabs = [
         { id: 'overview' as TabType, label: 'Overview', icon: '📊' },
         { id: 'flights' as TabType, label: 'Flight Management', icon: '✈️' },
+        { id: 'bookings' as TabType, label: 'Booking Management', icon: '🎫' },
         { id: 'users' as TabType, label: 'User Management', icon: '👥' },
         { id: 'analytics' as TabType, label: 'Analytics', icon: '📈' },
     ];
@@ -104,6 +106,7 @@ export default function AdminDashboardPage() {
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                     {activeTab === 'overview' && <AdminOverviewTab />}
                     {activeTab === 'flights' && <FlightsManagementTab />}
+                    {activeTab === 'bookings' && <BookingsManagementTab />}
                     {activeTab === 'users' && <UsersManagementTab />}
                     {activeTab === 'analytics' && <AnalyticsTab />}
                 </div>
@@ -512,6 +515,211 @@ function UsersManagementTab() {
                 </div>
                 <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block">🚀 Feature coming soon...</p>
             </div>
+        </div>
+    );
+}
+
+// Bookings Management Tab
+function BookingsManagementTab() {
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchBookings = async () => {
+        try {
+            const data = await getAllBookings();
+            setBookings(data);
+        } catch (err: any) {
+            console.error("Error fetching bookings:", err);
+            setError('Failed to load bookings');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchBookings();
+    }, []);
+
+    const handleStatusUpdate = async (bookingId: number, status: 'CONFIRMED' | 'REJECTED') => {
+        if (!confirm(`Are you sure you want to ${status.toLowerCase()} this booking?`)) {
+            return;
+        }
+
+        try {
+            await updateBookingStatus(bookingId, status);
+            alert(`Booking ${status.toLowerCase()} successfully!`);
+            fetchBookings(); // Refresh the list
+        } catch (error) {
+            console.error("Error updating booking status:", error);
+            alert("Error updating booking status");
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "BOOKED": return "bg-blue-100 text-blue-800";
+            case "CONFIRMED": return "bg-green-100 text-green-800";
+            case "REJECTED": return "bg-red-100 text-red-800";
+            default: return "bg-gray-100 text-gray-800";
+        }
+    };
+
+    const formatDateTime = (dateString: string) => {
+        return new Date(dateString).toLocaleString();
+    };
+
+    if (loading) {
+        return (
+            <div className="p-8">
+                <div className="text-center py-16">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600 text-lg font-medium">Loading bookings...</p>
+                    <p className="text-slate-400 text-sm">Please wait while we fetch booking data</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-8">
+                <div className="text-center py-12">
+                    <div className="text-red-600 mb-4">⚠️ {error}</div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-8">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-slate-900">Booking Management</h2>
+                    <p className="text-slate-600 mt-1">Review and manage flight bookings, approve or reject requests</p>
+                </div>
+                <div className="flex space-x-4">
+                    <div className="bg-blue-50 px-4 py-2 rounded-lg">
+                        <span className="text-blue-700 font-semibold">{bookings.filter(b => b.status === 'BOOKED').length}</span>
+                        <span className="text-blue-600 text-sm ml-1">Pending</span>
+                    </div>
+                    <div className="bg-green-50 px-4 py-2 rounded-lg">
+                        <span className="text-green-700 font-semibold">{bookings.filter(b => b.status === 'CONFIRMED').length}</span>
+                        <span className="text-green-600 text-sm ml-1">Confirmed</span>
+                    </div>
+                    <div className="bg-red-50 px-4 py-2 rounded-lg">
+                        <span className="text-red-700 font-semibold">{bookings.filter(b => b.status === 'REJECTED').length}</span>
+                        <span className="text-red-600 text-sm ml-1">Rejected</span>
+                    </div>
+                </div>
+            </div>
+
+            {bookings.length === 0 ? (
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
+                    <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <span className="text-4xl">🎫</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">No Bookings Found</h3>
+                    <p className="text-slate-600 mb-6 max-w-md mx-auto">There are no bookings in the system yet. Bookings will appear here once users start making flight reservations.</p>
+                </div>
+            ) : (
+                <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Booking ID
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Customer
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Flight
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Passengers
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Date
+                                    </th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-slate-100">
+                                {bookings.map((booking) => (
+                                    <tr key={booking.id} className="hover:bg-slate-50 transition-colors duration-150">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-bold text-slate-900">#{booking.id}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-slate-900">{booking.user.name}</div>
+                                            <div className="text-xs text-slate-500">{booking.user.email}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-semibold text-slate-900">{booking.flight.flightNumber}</div>
+                                            <div className="text-xs text-slate-500">{booking.flight.fromCity} → {booking.flight.toCity}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-slate-900">{booking.passengerCount}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-lg font-bold text-emerald-600">₹{booking.totalAmount.toLocaleString()}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(booking.status)}`}>
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-slate-900">{formatDateTime(booking.createdAt)}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex justify-end space-x-2">
+                                                                                                {booking.status === 'BOOKED' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}
+                                                            className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                        >
+                                                            <span>✅</span>
+                                                            <span>Approve</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(booking.id, 'REJECTED')}
+                                                            className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                        >
+                                                            <span>❌</span>
+                                                            <span>Reject</span>
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {booking.status !== 'BOOKED' && (
+                                                    <span className="text-slate-400 text-sm">No actions available</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -124,4 +124,60 @@ export class BookingService {
 
     return booking;
   }
+
+  async getAllBookings() {
+    return this.prisma.booking.findMany({
+      include: {
+        flight: true,
+        passengers: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async updateBookingStatus(id: number, status: 'CONFIRMED' | 'REJECTED') {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: { flight: true },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    // If rejecting, restore the seats
+    if (status === 'REJECTED' && booking.status === 'BOOKED') {
+      await this.prisma.flight.update({
+        where: { id: booking.flightId },
+        data: {
+          availableSeats: booking.flight.availableSeats + booking.passengerCount,
+        },
+      });
+    }
+
+    return this.prisma.booking.update({
+      where: { id },
+      data: { status },
+      include: {
+        flight: true,
+        passengers: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
 }

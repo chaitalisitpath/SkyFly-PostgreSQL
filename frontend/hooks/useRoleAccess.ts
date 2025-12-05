@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, hasRole } from '@/lib/auth';
 
-export const useRoleAccess = (requiredRole: 'ADMIN' | 'USER') => {
+export const useRoleAccess = (requiredRole: 'ADMIN' | 'USER' | ('ADMIN' | 'USER')[]) => {
   const router = useRouter();
 
   useEffect(() => {
@@ -12,8 +12,12 @@ export const useRoleAccess = (requiredRole: 'ADMIN' | 'USER') => {
       return;
     }
 
-    // Check if user has the required role
-    if (!hasRole(requiredRole)) {
+    // Check if user has the required role(s)
+    const hasAccess = Array.isArray(requiredRole)
+      ? requiredRole.some(role => hasRole(role))
+      : hasRole(requiredRole);
+
+    if (!hasAccess) {
       // Redirect to appropriate dashboard based on actual role
       const userRole = localStorage.getItem('user')
         ? JSON.parse(localStorage.getItem('user')!).role
