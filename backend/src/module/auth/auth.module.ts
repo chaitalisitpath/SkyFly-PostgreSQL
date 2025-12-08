@@ -6,6 +6,8 @@ import { AdminGuard } from './admin.guard';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { GoogleAuthService } from './google/google.service';
+import { GoogleAuthController } from './google/google.controller';
 
 @Module({
   imports: [
@@ -15,8 +17,8 @@ import { PassportModule } from '@nestjs/passport';
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  providers: [AuthService, JwtStrategy, AdminGuard, PrismaService],
-  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy, AdminGuard, PrismaService, GoogleAuthService],
+  controllers: [AuthController, GoogleAuthController],
   exports: [AuthService, AdminGuard], // optional if you want to use it elsewhere
 })
 export class AuthModule {}

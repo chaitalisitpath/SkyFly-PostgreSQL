@@ -13,57 +13,92 @@ export class AuthService {
 
   //Register service
   debugger
-  async register(dto: RegisterDto) {
-    // 1️⃣ Check if email already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+ async register(dto: RegisterDto) {
+  // 1️⃣ Check if email already exists
+  const existingUser = await this.prisma.user.findUnique({
+    where: { email: dto.email },
+  });
 
-    if (existingUser) {
-      throw new BadRequestException('Email is already registered');
+  if (existingUser) {
+    throw new BadRequestException('Email is already registered');
+  }
+
+  // ✅ Default provider
+  const provider = dto.provider ?? 'local';
+
+  let hashedPassword: string | null = null;
+
+  // ✅ Only hash password for local users
+  if (provider === 'local') {
+    if (!dto.password) {
+      throw new BadRequestException('Password is required for local signup');
     }
 
-    // 2️⃣ Hash password
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    // 3️⃣ Create user
-    const user = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        email: dto.email,
-        password: hashedPassword,
-      },
-    });
-
-    return user;
+    hashedPassword = await bcrypt.hash(dto.password, 10);
   }
+
+  // 3️⃣ Create user
+  const user = await this.prisma.user.create({
+    data: {
+      name: dto.name,
+      email: dto.email,
+      password: hashedPassword, // ✅ null for Google user
+      provider,
+    },
+  });
+
+  return user;
+}
+
 
 //Login Service
-  async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+ async login(dto: LoginDto) {
+  const user = await this.prisma.user.findUnique({
+    where: { email: dto.email },
+  });
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const token = this.jwtService.sign(payload);
-
-    return {
-      access_token: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-    };
+  if (!user) {
+    throw new UnauthorizedException('Invalid credentials');
   }
+
+  // ✅ Block Google users
+  if (user.provider === 'google') {
+    throw new UnauthorizedException(
+      'This account uses Google Sign-In. Please login with Google.',
+    );
+  }
+
+  // ✅ Type narrowing (THIS FIXES THE ERROR)
+  if (!dto.password || !user.password) {
+    throw new UnauthorizedException('Invalid credentials');
+  }
+
+  const isPasswordValid = await bcrypt.compare(
+    dto.password,
+    user.password,
+  );
+
+  if (!isPasswordValid) {
+    throw new UnauthorizedException('Invalid credentials');
+  }
+
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  const token = this.jwtService.sign(payload);
+
+  return {
+    access_token: token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+  };
+}
+
 }

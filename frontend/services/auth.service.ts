@@ -16,6 +16,13 @@ export const registerUser = async (name: string, email: string, password: string
   return response.data;
 };
 
+export const googleLogin = async (token: string) => {
+  const response = await api.post("/auth/google-login", {
+    token,
+  });
+  return response.data;
+};
+
 export const logoutUser = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { loginUser } from "../../services/auth.service";
+import { GoogleLogin } from "@react-oauth/google";
+import { loginUser, googleLogin } from "../../services/auth.service";
 
 interface ValidationErrors {
   email?: string;
@@ -83,7 +84,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     // Validate form before submitting
     if (!validateForm()) {
       return;
@@ -109,6 +110,34 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google login handler
+  const handleGoogleLogin = async (credentialResponse: any) => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await googleLogin(credentialResponse.credential);
+
+      // Save access token
+      localStorage.setItem("token", data.access_token);
+
+      // Save user info (optional)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect based on role
+      if (data.user.role === "ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/user/dashboard");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || "Google login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -222,17 +251,24 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Divider 
+          {/* Divider */}
           <div className="my-6 border-t text-center relative">
             <span className="text-xs bg-gray-50 px-2 text-gray-400 absolute left-1/2 -translate-x-1/2 -top-2">
               OR
             </span>
           </div>
 
-          {/* Secondary Login 
-          <button className="w-full border py-2 text-sm hover:bg-gray-100 transition">
-            Continue with booking reference
-          </button>*/}
+          {/* Google Login */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => setError("Google login failed. Please try again.")}
+              theme="outline"
+              size="large"
+              text="signin_with"
+              shape="rectangular"
+            />
+          </div>
 
             {/* Login link */}
           <p className="text-center text-sm text-gray-500 mt-6">
