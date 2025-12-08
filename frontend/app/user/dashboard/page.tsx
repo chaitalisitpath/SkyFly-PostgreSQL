@@ -255,7 +255,7 @@ function BookingsTab() {
                     <p className="text-gray-600 mt-1">Manage your flight reservations and travel plans</p>
                 </div>
                 <button
-                    onClick={() => router.push('/')}
+                    onClick={() => router.push('/user/book')}
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2"
                 >
                     <PaperAirplaneIcon className="w-5 h-5" />

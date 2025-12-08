@@ -3,6 +3,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 const popularCities = [
   "Delhi",
@@ -58,14 +59,14 @@ export default function HeroSection() {
 
       // If backend returns array of flights
       if (Array.isArray(data) && data.length === 0) {
-        alert('No flight available');
+        toast.error('No flights available');
         return;
       }
 
       // If backend returns object with message or empty result
       if (!res.ok) {
-        const msg = (data && data.message) || 'No flight available';
-        alert(msg);
+        const msg = (data && data.message) || 'No flights available';
+        toast.error(msg);
         return;
       }
 
@@ -73,7 +74,7 @@ export default function HeroSection() {
       router.push(`/flights?${params.toString()}`);
     } catch (err) {
       console.error(err);
-      alert('No flight available');
+      toast.error('No flights available');
     }
   };
 
@@ -98,6 +99,7 @@ export default function HeroSection() {
 
   return (
     <div>
+      <Toaster position="bottom-right" />
       {/* Hero Section */}
       <section
         className="relative h-screen bg-cover bg-center"
