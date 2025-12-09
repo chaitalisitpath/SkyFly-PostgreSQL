@@ -3,9 +3,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { isAuthenticated, isAdmin, getCurrentUser } from "@/lib/auth";
+import Logout from "./Logout";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const authenticated = isAuthenticated();
+  const dashboardHref = authenticated ? (isAdmin() ? '/admin/dashboard' : '/user/dashboard') : '';
+  const user = getCurrentUser();
 
   return (
     <nav className="bg-gray-900 text-white shadow-md">
@@ -27,12 +32,22 @@ export default function Navbar() {
             <Link href="#contact" className="hover:text-gray-300">
               Contact
             </Link>
-             <Link
-              href="/login"
-              className="ml-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-sm font-medium"
-            >
-              Login
-            </Link>
+            {authenticated ? (
+              <>
+                <Link href={dashboardHref} className="hover:text-gray-300">
+                  Dashboard
+                </Link>
+                <span className="text-gray-300">Welcome back, {user?.name}</span>
+                <Logout />
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="ml-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-sm font-medium"
+              >
+                Login
+              </Link>
+            )}
           </div>
           
 
@@ -114,13 +129,29 @@ export default function Navbar() {
           >
             Contact
           </Link>
+          {authenticated ? (
+            <>
+              <Link
+                href={dashboardHref}
+                className="block px-3 py-2 rounded hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <span className="block px-3 py-2 text-gray-300">Welcome back, {user?.name}</span>
+              <div className="mt-2 px-3 py-2">
+                <Logout />
+              </div>
+            </>
+          ) : (
             <Link
-            href="/login"
-            className="block mt-2 px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-center text-white"
-            onClick={() => setIsOpen(false)}
-          >
-            Login
-          </Link>
+              href="/login"
+              className="block mt-2 px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-center text-white"
+              onClick={() => setIsOpen(false)}
+            >
+              Login
+            </Link>
+          )}
         </div>
       )}
     </nav>

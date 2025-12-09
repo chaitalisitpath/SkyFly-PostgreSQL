@@ -1,6 +1,7 @@
 "use client";
 import Navbar from "@/components/Navbar";
 import { getFlights, searchFlights, Flight, SearchFlightsParams } from "@/services/flight.service";
+import { isAuthenticated } from "@/lib/auth";
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -55,6 +56,21 @@ export default function Flights() {
     return `${hours}h ${minutes}m`;
   };
 
+  const handleBookFlight = (flightId: number) => {
+    if (!isAuthenticated()) {
+      // Store booking intent in session storage
+      const bookingData = {
+        flightId: flightId.toString(),
+        searchParams: Object.fromEntries(searchParams.entries())
+      };
+      sessionStorage.setItem('bookingIntent', JSON.stringify(bookingData));
+      console.log('Stored booking intent:', bookingData);
+      router.push('/login');
+    } else {
+      router.push(`/user/book?flightId=${encodeURIComponent(flightId.toString())}`);
+    }
+  };
+
 
   return (
     <>
@@ -80,7 +96,13 @@ export default function Flights() {
                 <div className="flex items-center justify-center md:justify-start space-x-4">
                   {/* Departure */}
                   <div className="text-center">
-                    <p className="text-xl font-bold text-gray-900">{new Date(flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-xl font-bold text-gray-900">{new Date(flight.departureTime).toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+                    } IST</p>
                     <p className="text-sm text-gray-600">{flight.fromCity}</p>
                   </div>
 
@@ -96,7 +118,13 @@ export default function Flights() {
 
                   {/* Arrival */}
                   <div className="text-center">
-                    <p className="text-xl font-bold text-gray-900">{new Date(flight.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-xl font-bold text-gray-900">{new Date(flight.arrivalTime).toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+                    } IST</p>
                     <p className="text-sm text-gray-600">{flight.toCity}</p>
                   </div>
                 </div>
@@ -110,7 +138,7 @@ export default function Flights() {
                 <div className="text-center md:text-right flex flex-col items-center md:items-end gap-2">
                   <button
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-200"
-                    onClick={() => router.push(`/user/book?flightId=${encodeURIComponent(flight.id)}`)}
+                    onClick={() => handleBookFlight(flight.id)}
                   >
                     Book Flight
                   </button>
@@ -152,12 +180,32 @@ export default function Flights() {
                   <div>
                     <p className="text-sm font-medium text-gray-500">From</p>
                     <p className="text-lg font-semibold text-gray-900">{selectedFlight.fromCity}</p>
-                    <p className="text-sm text-gray-600">{new Date(selectedFlight.departureTime).toLocaleString()}</p>
+                    <p className="text-sm text-gray-600">{new Date(selectedFlight.departureTime).toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+
+                    } IST</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">To</p>
                     <p className="text-lg font-semibold text-gray-900">{selectedFlight.toCity}</p>
-                    <p className="text-sm text-gray-600">{new Date(selectedFlight.arrivalTime).toLocaleString()}</p>
+                    <p className="text-sm text-gray-600">{new Date(selectedFlight.arrivalTime).toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+
+                    } IST</p>
                   </div>
                 </div>
 
@@ -200,7 +248,7 @@ export default function Flights() {
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-200"
                       onClick={() => {
                         setSelectedFlight(null);
-                        router.push(`/user/book?flightId=${encodeURIComponent(selectedFlight.id)}`);
+                        handleBookFlight(selectedFlight.id);
                       }}
                     >
                       Book Flight

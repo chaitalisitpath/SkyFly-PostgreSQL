@@ -6,16 +6,16 @@ import Logout from "@/components/Logout";
 import { getUserBookings } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import {
-  ChartBarIcon,
-  TicketIcon,
-  UserIcon,
-  TrophyIcon,
-  MapPinIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  PaperAirplaneIcon,
-  CogIcon
+    ChartBarIcon,
+    TicketIcon,
+    UserIcon,
+    TrophyIcon,
+    MapPinIcon,
+    CalendarDaysIcon,
+    ClockIcon,
+    ExclamationTriangleIcon,
+    PaperAirplaneIcon,
+    CogIcon
 } from "@heroicons/react/24/outline";
 
 type TabType = 'dashboard' | 'bookings' | 'profile';
@@ -92,11 +92,10 @@ export default function DashboardPage() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center space-x-3 py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                                    activeTab === tab.id
-                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md transform scale-105'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
-                                }`}
+                                className={`flex items-center space-x-3 py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200 ${activeTab === tab.id
+                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md transform scale-105'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                                    }`}
                             >
                                 <tab.icon className="w-5 h-5" />
                                 <span>{tab.label}</span>
@@ -274,13 +273,12 @@ function BookingsTab() {
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-gray-900">{booking.flight.flightNumber}</h3>
-                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
-                                            booking.status === 'CONFIRMED'
-                                                ? 'bg-green-100 text-green-800'
-                                                : booking.status === 'BOOKED'
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${booking.status === 'CONFIRMED'
+                                            ? 'bg-green-100 text-green-800'
+                                            : booking.status === 'BOOKED'
                                                 ? 'bg-blue-100 text-blue-800'
                                                 : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
+                                            }`}>
                                             {booking.status}
                                         </span>
                                     </div>
@@ -296,7 +294,16 @@ function BookingsTab() {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <ClockIcon className="w-5 h-5 text-purple-500" />
-                                        <span>{new Date(booking.flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <span>{new Date(booking.flight.departureTime).toLocaleString("en-GB", {
+                                            timeZone: "UTC",
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: false,
+                                        })
+                                        } IST</span>
                                     </div>
                                 </div>
                                 <div className="text-sm text-gray-600">

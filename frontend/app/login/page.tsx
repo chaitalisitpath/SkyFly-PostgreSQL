@@ -101,6 +101,21 @@ export default function LoginPage() {
       // Save user info (optional)
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      // Check for booking intent in session storage
+      const bookingIntent = sessionStorage.getItem('bookingIntent');
+      console.log('Checking booking intent on Google login:', bookingIntent);
+      if (bookingIntent) {
+        try {
+          const { flightId } = JSON.parse(bookingIntent);
+          console.log('Found booking intent, redirecting to flight:', flightId);
+          sessionStorage.removeItem('bookingIntent');
+          router.push(`/user/book?flightId=${encodeURIComponent(flightId)}`);
+          return;
+        } catch (err) {
+          console.error('Failed to parse booking intent:', err);
+        }
+      }
+
       // Redirect based on role
       if (data.user.role === "ADMIN") {
         router.push("/admin/dashboard");
@@ -128,6 +143,21 @@ export default function LoginPage() {
 
       // Save user info (optional)
       localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Check for booking intent in session storage
+      const bookingIntent = sessionStorage.getItem('bookingIntent');
+      console.log('Checking booking intent on login:', bookingIntent);
+      if (bookingIntent) {
+        try {
+          const { flightId } = JSON.parse(bookingIntent);
+          console.log('Found booking intent, redirecting to flight:', flightId);
+          sessionStorage.removeItem('bookingIntent');
+          router.push(`/user/book?flightId=${encodeURIComponent(flightId)}`);
+          return;
+        } catch (err) {
+          console.error('Failed to parse booking intent:', err);
+        }
+      }
 
       // Redirect based on role
       if (data.user.role === "ADMIN") {

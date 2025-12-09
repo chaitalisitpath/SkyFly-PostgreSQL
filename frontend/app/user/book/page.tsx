@@ -1,23 +1,11 @@
 "use client";
 import Navbar from "@/components/Navbar";
-import { searchFlights, Flight } from "@/services/flight.service";
+import { getFlightById, Flight } from "@/services/flight.service";
 import { createBooking, Passenger } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-const popularCities = [
-  "Delhi",
-  "Mumbai",
-  "Bangalore",
-  "Chennai",
-  "Kolkata",
-  "Hyderabad",
-  "Pune",
-  "Ahmedabad",
-  "Jaipur",
-  "Lucknow"
-];
 
 export default function BookFlight() {
   const [step, setStep] = useState(1); // 1: search, 2: passengers, 3: confirmation
@@ -28,12 +16,6 @@ export default function BookFlight() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingId, setBookingId] = useState<number | null>(null);
 
-  // Search states
-  const [searchFromCity, setSearchFromCity] = useState('');
-  const [searchToCity, setSearchToCity] = useState('');
-  const [searchDepartureDate, setSearchDepartureDate] = useState('');
-  const [searchResults, setSearchResults] = useState<Flight[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
 
   const searchParams = useSearchParams();
@@ -42,6 +24,31 @@ export default function BookFlight() {
 
   // Role-based access control - only USER can access this page
   useRoleAccess('USER');
+
+  // Fetch flight if flightId is present
+  useEffect(() => {
+    if (flightId) {
+      const fetchFlight = async () => {
+        try {
+          const flight = await getFlightById(parseInt(flightId));
+          setSelectedFlight(flight);
+          setPassengerCount(1);
+          // Initialize passengers array
+          const initialPassengers: Passenger[] = [{
+            name: '',
+            age: 0,
+            gender: 'MALE' as const,
+          }];
+          setPassengers(initialPassengers);
+          setStep(1);
+        } catch (err) {
+          console.error('Failed to fetch flight:', err);
+          setError('Failed to load flight details');
+        }
+      };
+      fetchFlight();
+    }
+  }, [flightId]);
 
 
   const handleQuantityChange = (count: number) => {
@@ -58,6 +65,28 @@ export default function BookFlight() {
       gender: 'MALE' as const,
     }));
     setPassengers(initialPassengers);
+    setError(null);
+  };
+
+  const handleAddPassenger = () => {
+    if (!selectedFlight) return;
+    if (passengers.length >= selectedFlight.availableSeats) {
+      setError(`Maximum ${selectedFlight.availableSeats} passengers allowed`);
+      return;
+    }
+    setPassengers([...passengers, { name: '', age: 0, gender: 'MALE' as const }]);
+    setPassengerCount(passengers.length + 1);
+    setError(null);
+  };
+
+  const handleRemovePassenger = (index: number) => {
+    if (passengers.length <= 1) {
+      setError('At least one passenger is required');
+      return;
+    }
+    const updatedPassengers = passengers.filter((_, i) => i !== index);
+    setPassengers(updatedPassengers);
+    setPassengerCount(updatedPassengers.length);
     setError(null);
   };
 
@@ -86,7 +115,7 @@ export default function BookFlight() {
       }
     }
 
-    setStep(3);
+    setStep(2);
     setError(null);
   };
 
@@ -118,25 +147,6 @@ export default function BookFlight() {
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchLoading(true);
-    setError(null);
-    try {
-      const params = {
-        fromCity: searchFromCity,
-        toCity: searchToCity,
-        departureTime: searchDepartureDate ? new Date(searchDepartureDate).toISOString().split('T')[0] : undefined,
-      };
-      const results = await searchFlights(params);
-      setSearchResults(results);
-    } catch (err) {
-      console.error('Search failed:', err);
-      setError('Failed to search flights');
-    } finally {
-      setSearchLoading(false);
-    }
-  };
 
   const calculateTotal = () => {
     if (!selectedFlight) return 0;
@@ -150,7 +160,7 @@ export default function BookFlight() {
       <div className="max-w-4xl mx-auto mt-8 px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           {/* Flight Summary */}
-          {selectedFlight && step > 1 && (
+          {selectedFlight && step >= 1 && (
             <div className="mb-8 p-4 bg-gray-50 rounded-lg">
               <h2 className="text-xl font-bold mb-4">Flight Details</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -165,7 +175,17 @@ export default function BookFlight() {
                 <div>
                   <p className="text-sm text-gray-600">Departure</p>
                   <p className="font-semibold">
-                    {new Date(selectedFlight.departureTime).toLocaleString()}
+                    {new Date(selectedFlight.departureTime).toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+
+                    } IST
                   </p>
                 </div>
               </div>
@@ -175,27 +195,20 @@ export default function BookFlight() {
           {/* Progress Steps */}
           {!bookingSuccess && (
             <div className="flex items-center mb-8">
-            <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
-                1
+              <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
+                  1
+                </div>
+                <span className="ml-2">Passengers</span>
               </div>
-              <span className="ml-2">Search</span>
-            </div>
-            <div className={`flex-1 h-px mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
-                2
+              <div className={`flex-1 h-px mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+              <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
+                  2
+                </div>
+                <span className="ml-2">Confirm</span>
               </div>
-              <span className="ml-2">Passengers</span>
             </div>
-            <div className={`flex-1 h-px mx-4 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 3 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
-                3
-              </div>
-              <span className="ml-2">Confirm</span>
-            </div>
-          </div>
           )}
 
           {/* Success Message */}
@@ -234,158 +247,42 @@ export default function BookFlight() {
             </div>
           )}
 
-          {/* Step 1: Search Flights */}
-          {step === 1 && !bookingSuccess && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Search Flights</h3>
-              <form onSubmit={handleSearch} className="mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      From City
-                    </label>
-                    <select
-                      value={searchFromCity}
-                      onChange={(e) => setSearchFromCity(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="">Select departure city</option>
-                      {popularCities.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      To City
-                    </label>
-                    <select
-                      value={searchToCity}
-                      onChange={(e) => setSearchToCity(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="">Select destination city</option>
-                      {popularCities.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Departure Date
-                    </label>
-                    <input
-                      type="date"
-                      value={searchDepartureDate}
-                      onChange={(e) => setSearchDepartureDate(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      min={new Date().toISOString().split('T')[0]}
-                      required
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={searchLoading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {searchLoading ? 'Searching...' : 'Search Flights'}
-                </button>
-              </form>
 
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div>
-                  <h4 className="text-md font-semibold mb-4">Available Flights</h4>
-                  <div className="space-y-4">
-                    {searchResults.map((flight) => (
-                      <div key={flight.id} className="p-4 border border-gray-200 rounded-lg">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                          <div>
-                            <p className="text-sm text-gray-600">Flight</p>
-                            <p className="font-semibold">{flight.flightNumber}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600">Route</p>
-                            <p className="font-semibold">{flight.fromCity} → {flight.toCity}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600">Departure</p>
-                            <p className="font-semibold">
-                              {new Date(flight.departureTime).toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600">Price</p>
-                            <p className="font-semibold">₹{flight.price.toLocaleString()}</p>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex justify-between items-center">
-                          <p className="text-sm text-gray-600">
-                            Available seats: {flight.availableSeats}
-                          </p>
-                          <button
-                            onClick={() => {
-                              setSelectedFlight(flight);
-                              setStep(2);
-                              handleQuantityChange(1); // Initialize with 1 passenger
-                            }}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                          >
-                            Book Flight
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Step 2: Passenger Quantity and Details */}
-          {step === 2 && selectedFlight && !bookingSuccess && (
+          {/* Step 1: Passenger Quantity and Details */}
+          {step === 1 && selectedFlight && !bookingSuccess && (
             <form onSubmit={handlePassengersSubmit}>
-              <h3 className="text-lg font-semibold mb-4">Passenger Information</h3>
-
-              {/* Quantity Selector */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Passengers
-                </label>
-                <div className="flex items-center space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => handleQuantityChange(Math.max(1, passengerCount - 1))}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                  >
-                    -
-                  </button>
-                  <span className="text-lg font-semibold">{passengerCount}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleQuantityChange(Math.min(selectedFlight.availableSeats, passengerCount + 1))}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                  >
-                    +
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600 mt-1">
-                  Available seats: {selectedFlight.availableSeats}
-                </p>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold">Passenger Information</h3>
+                <button
+                  type="button"
+                  onClick={handleAddPassenger}
+                  disabled={passengers.length >= selectedFlight.availableSeats}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  <span>Add Passenger</span>
+                </button>
               </div>
+
+              <p className="text-sm text-gray-600 mb-4">
+                Available seats: {selectedFlight.availableSeats} | Passengers: {passengers.length}
+              </p>
 
               {/* Passenger Details */}
               <div className="space-y-6">
                 {passengers.map((passenger, index) => (
-                  <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                    <h4 className="font-medium mb-3">Passenger {index + 1}</h4>
+                  <div key={index} className="p-4 border border-gray-200 rounded-lg relative">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium">Passenger {index + 1}</h4>
+                      {passengers.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePassenger(index)}
+                          className="px-3 py-1 text-sm text-red-600 border border-red-600 rounded-md hover:bg-red-50 flex items-center space-x-1"
+                        >
+                          <span>Remove</span>
+                        </button>
+                      )}
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -431,21 +328,11 @@ export default function BookFlight() {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between items-center mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep(1);
-                    setSelectedFlight(null);
-                    setSearchResults([]);
-                  }}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Back
-                </button>
+              <div className="flex justify-end items-center mt-6">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  disabled={!passengers.every(p => p.name.trim() && p.age >= 1 && p.age <= 120)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continue
                 </button>
@@ -453,8 +340,8 @@ export default function BookFlight() {
             </form>
           )}
 
-          {/* Step 3: Confirmation */}
-          {step === 3 && selectedFlight && !bookingSuccess && (
+          {/* Step 2: Confirmation */}
+          {step === 2 && selectedFlight && !bookingSuccess && (
             <div>
               <h3 className="text-lg font-semibold mb-4">Booking Confirmation</h3>
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
@@ -489,7 +376,7 @@ export default function BookFlight() {
               </div>
               <div className="flex justify-between items-center">
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
                   disabled={bookingLoading}
                 >
