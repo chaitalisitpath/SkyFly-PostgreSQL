@@ -6,6 +6,8 @@ datasource db {
   provider = "postgresql"
 }
 
+//////////////////// ENUMS ////////////////////
+
 enum Role {
   USER
   ADMIN
@@ -17,17 +19,19 @@ enum FlightStatus {
   CANCELLED
 }
 
-enum BookingStatus {
-  BOOKED
-  CONFIRMED
-  REJECTED
-}
-
 enum Gender {
   MALE
   FEMALE
   OTHER
 }
+
+enum SeatClass {
+  ECONOMY
+  BUSINESS
+  FIRST
+}
+
+//////////////////// MODELS ////////////////////
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -37,30 +41,61 @@ model User {
   role      Role     @default(USER)
   provider  String   @default("local")
   googleId  String?  @unique
+
   bookings  Booking[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+//////////////////// AIRCRAFT ////////////////////
+// Admin defines seat capacity per class
+model Aircraft {
+  id                 Int     @id @default(autoincrement())
+  model              String  @unique   // A320, B737
+
+  economySeatCount   Int?
+  businessSeatCount  Int?
+  firstSeatCount     Int?
+
+  flights            Flight[]
+
+  createdAt DateTime @default(now())
+}
+
+//////////////////// FLIGHT ////////////////////
+// Aircraft selected here
 model Flight {
   id                        Int           @id @default(autoincrement())
   flightNumber              String        @unique
+
   departureAirport          String
   arrivalAirport            String
   departureAirportTerminal  Int
   arrivalAirportTerminal    Int
+
   fromCity                  String
   toCity                    String
   departureTime             DateTime
   arrivalTime               DateTime
-  totalSeats                Int
-  availableSeats            Int
+
   status                    FlightStatus  @default(ON_TIME)
-  price                     Decimal
+
+  economyPrice              Decimal?      // optional
+  businessPrice             Decimal?      // optional
+  firstPrice                Decimal?      // optional
+
+  aircraftId                Int
+  aircraft                  Aircraft      @relation(fields: [aircraftId], references: [id])
+
   bookings                  Booking[]
+  passengers                Passenger[]
+
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 }
+
+//////////////////// BOOKING ////////////////////
 
 model Booking {
   id               Int            @id @default(autoincrement())
@@ -68,25 +103,33 @@ model Booking {
   flightId         Int
   passengerCount   Int
   totalAmount      Decimal
-  status           BookingStatus  @default(BOOKED)
 
-  flight           Flight         @relation(fields: [flightId], references: [id])
   user             User           @relation(fields: [userId], references: [id])
+  flight           Flight         @relation(fields: [flightId], references: [id])
+
   passengers       Passenger[]
 
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }
 
+//////////////////// PASSENGER ////////////////////
+
 model Passenger {
   id          Int      @id @default(autoincrement())
   bookingId   Int
+  flightId    Int      // added for seat uniqueness across flight
   name        String
   age         Int
   gender      Gender
+  seatClass   SeatClass
+  seatNumber  String   // e.g. 12A, 3C
+
   booking     Booking  @relation(fields: [bookingId], references: [id])
+  flight      Flight   @relation(fields: [flightId], references: [id])
+
   createdAt   DateTime @default(now())
+
+  @@unique([flightId, seatNumber]) // ensures seat cannot be double-booked
 }
 
-
- 
