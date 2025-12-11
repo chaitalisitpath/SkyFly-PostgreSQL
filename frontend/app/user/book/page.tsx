@@ -72,6 +72,13 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
     onSeatsSelected(newSelectedSeats, updatedPassengers);
   };
 
+  const getSeatGroups = (seats: string[], className: string) => {
+    if (className === 'economy') return [seats.slice(0, 3), seats.slice(3)];
+    if (className === 'business') return [seats.slice(0, 2), seats.slice(2)];
+    if (className === 'first') return [seats.slice(0, 1), seats.slice(1)];
+    return [seats];
+  };
+
   const renderSeats = (seats: string[], className: string) => {
     const rows: { [key: string]: string[] } = {};
     seats.forEach(seat => {
@@ -80,27 +87,37 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
       rows[row].push(seat);
     });
 
-    return Object.entries(rows).map(([row, rowSeats]) => (
-      <div key={row} className="flex items-center justify-center space-x-2 mb-2">
-        <span className="w-6 text-sm font-medium">{row}</span>
-        {rowSeats.map(seat => (
-          <button
-            key={seat}
-            className={`w-8 h-8 text-xs font-medium rounded border ${
-              occupiedSeats.includes(seat)
-                ? 'bg-red-600 text-white border-red-600 cursor-not-allowed'
-                : selectedSeats.includes(seat)
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-green-200 text-gray-800 border-gray-300 hover:border-blue-400'
-            }`}
-            onClick={() => toggleSeat(seat)}
-            title={`Seat ${seat} - ₹${getSeatPrice(seat).toLocaleString()}`}
-          >
-            {seat.slice(-2, -1)}
-          </button>
-        ))}
-      </div>
-    ));
+    return Object.entries(rows).map(([row, rowSeats]) => {
+      const groups = getSeatGroups(rowSeats, className);
+      return (
+        <div key={row} className="flex items-center justify-center mb-2">
+          <span className="w-6 text-sm font-medium">{row}</span>
+          {groups.map((group, groupIndex) => (
+            <React.Fragment key={groupIndex}>
+              {groupIndex > 0 && <div className="w-8"></div>}
+              <div className="flex items-center space-x-2">
+                {group.map(seat => (
+                  <button
+                    key={seat}
+                    className={`w-8 h-8 text-xs font-medium rounded border ${
+                      occupiedSeats.includes(seat)
+                        ? 'bg-red-600 text-white border-red-600 cursor-not-allowed'
+                        : selectedSeats.includes(seat)
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-green-200 text-gray-800 border-gray-300 hover:border-blue-400'
+                    }`}
+                    onClick={() => toggleSeat(seat)}
+                    title={`Seat ${seat} - ₹${getSeatPrice(seat).toLocaleString()}`}
+                  >
+                    {seat.slice(-2, -1)}
+                  </button>
+                ))}
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    });
   };
 
   if (loading) return <div className="text-center py-8">Loading seat map...</div>;
