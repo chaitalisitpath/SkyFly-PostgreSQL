@@ -14,6 +14,13 @@ export interface Flight {
   arrivalAirportTerminal: number;
   availableSeats: number;
   aircraftId: number;
+  aircraft?: {
+    id: number;
+    model: string;
+    economySeatCount?: number | null;
+    businessSeatCount?: number | null;
+    firstSeatCount?: number | null;
+  };
   economyPrice?: number;
   businessPrice?: number;
   firstPrice?: number;

@@ -26,9 +26,6 @@ export default function Navbar() {
             <Link href="#destinations" className="hover:text-gray-300">
               Destinations
             </Link>
-            <Link href="#reviews" className="hover:text-gray-300">
-              Reviews
-            </Link>
             <Link href="#contact" className="hover:text-gray-300">
               Contact
             </Link>

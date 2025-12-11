@@ -25,10 +25,10 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
-  RocketLaunchIcon
+  RocketLaunchIcon  
 } from "@heroicons/react/24/outline";
 
-type TabType = 'overview' | 'flights' | 'aircraft' | 'bookings' | 'users' | 'analytics';
+type TabType = 'overview' | 'flights' | 'aircraft' | 'bookings';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -68,9 +68,7 @@ export default function AdminDashboardPage() {
         { id: 'overview' as TabType, label: 'Overview', icon: ChartBarIcon },
         { id: 'flights' as TabType, label: 'Flight Management', icon: PaperAirplaneIcon },
         { id: 'aircraft' as TabType, label: 'Aircraft Management', icon: RocketLaunchIcon },
-        { id: 'bookings' as TabType, label: 'Booking Management', icon: TicketIcon },
-        { id: 'users' as TabType, label: 'User Management', icon: UsersIcon },
-        { id: 'analytics' as TabType, label: 'Analytics', icon: ChartBarSquareIcon },
+        { id: 'bookings' as TabType, label: 'Booking Management', icon: TicketIcon }
     ];
 
     return (
@@ -128,8 +126,6 @@ export default function AdminDashboardPage() {
                     {activeTab === 'flights' && <FlightsManagementTab />}
                     {activeTab === 'aircraft' && <AircraftManagementTab />}
                     {activeTab === 'bookings' && <BookingsManagementTab />}
-                    {activeTab === 'users' && <UsersManagementTab />}
-                    {activeTab === 'analytics' && <AnalyticsTab />}
                 </div>
             </div>
         </div>
@@ -394,6 +390,9 @@ function FlightsManagementTab() {
                                         Route
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Aircraft
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Departure
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
@@ -433,6 +432,9 @@ function FlightsManagementTab() {
                                                 <span className="inline-block w-2 h-2 bg-slate-300 rounded-full mr-2"></span>
                                                 T{flight.departureAirportTerminal} → T{flight.arrivalAirportTerminal}
                                             </div>
+                                        </td>                                        
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-semibold text-slate-900">{flight.aircraft?.model ?? 'Unknown aircraft'}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-slate-900">{formatDateTime(flight.departureTime)}</div>
@@ -496,47 +498,6 @@ function FlightsManagementTab() {
                 onSuccess={handleEditFlightSuccess}
                 flight={selectedFlight}
             />
-        </div>
-    );
-}
-
-// Users Management Tab
-function UsersManagementTab() {
-    return (
-        <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h2 className="text-3xl font-bold text-slate-900">User Management</h2>
-                    <p className="text-slate-600 mt-1">Manage user accounts, roles, and permissions</p>
-                </div>
-                <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2 opacity-60 cursor-not-allowed">
-                    <UserIcon className="w-5 h-5" />
-                    <span>Add New User</span>
-                </button>
-            </div>
-
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
-                <div className="w-24 h-24 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <UsersIcon className="w-20 h-20" />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">User Management System</h3>
-                <p className="text-slate-600 mb-6 max-w-lg mx-auto">A comprehensive user management dashboard is being developed. You'll be able to manage user accounts, assign roles, set permissions, and monitor user activity.</p>
-                <div className="flex justify-center space-x-4 mb-6">
-                    <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                        <span className="text-sm text-slate-700">User Profiles</span>
-                    </div>
-                    <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm text-slate-700">Role Management</span>
-                    </div>
-                    <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-sm text-slate-700">Access Control</span>
-                    </div>
-                </div>
-                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block"><RocketLaunchIcon className="w-4 h-4 inline mr-1" />Feature coming soon...</p>
-            </div>
         </div>
     );
 }
@@ -901,46 +862,4 @@ function AircraftManagementTab() {
     );
 }
 
-// Analytics Tab
-function AnalyticsTab() {
-    return (
-        <div className="p-8">
-            <div className="mb-8">
-                <h2 className="text-3xl font-bold text-slate-900">Analytics Dashboard</h2>
-                <p className="text-slate-600 mt-1">Gain insights with comprehensive data visualization and reporting</p>
-            </div>
 
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
-                <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <ChartBarIcon className="w-20 h-20" />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">Advanced Analytics Platform</h3>
-                <p className="text-slate-600 mb-6 max-w-lg mx-auto">Get powerful insights with interactive charts, real-time dashboards, and detailed reports on flight performance, revenue trends, and customer behavior.</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <ChartBarSquareIcon className="w-8 h-8" />
-                        </div>
-                        <h4 className="font-semibold text-slate-900 mb-1">Revenue Analytics</h4>
-                        <p className="text-sm text-slate-600">Track earnings and financial performance</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-                        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <PaperAirplaneIcon className="w-8 h-8" />
-                        </div>
-                        <h4 className="font-semibold text-slate-900 mb-1">Flight Performance</h4>
-                        <p className="text-sm text-slate-600">Monitor flight metrics and efficiency</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <UsersIcon className="w-8 h-8" />
-                        </div>
-                        <h4 className="font-semibold text-slate-900 mb-1">Customer Insights</h4>
-                        <p className="text-sm text-slate-600">Understand user behavior and preferences</p>
-                    </div>
-                </div>
-                <p className="text-sm text-slate-500 bg-slate-200 px-4 py-2 rounded-lg inline-block"><RocketLaunchIcon className="w-4 h-4 inline mr-1" />Feature coming soon...</p>
-            </div>
-        </div>
-    );
-}

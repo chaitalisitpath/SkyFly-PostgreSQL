@@ -393,7 +393,7 @@ export default function BookFlight() {
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
                   2
                 </div>
-                <span className="ml-2">Seats</span>
+                <span className="ml-2">Seat Selection</span>
               </div>
               <div className={`flex-1 h-px mx-4 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
               <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
