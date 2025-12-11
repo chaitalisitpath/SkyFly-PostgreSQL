@@ -25,7 +25,9 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
-  RocketLaunchIcon  
+  RocketLaunchIcon,
+  EyeIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
 
 type TabType = 'overview' | 'flights' | 'aircraft' | 'bookings';
@@ -507,6 +509,8 @@ function BookingsManagementTab() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showPassengerModal, setShowPassengerModal] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
     const fetchBookings = async () => {
         try {
@@ -673,33 +677,102 @@ function BookingsManagementTab() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
-                                                                                                {booking.status === 'BOOKED' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}
-                                                            className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
-                                                        >
-                                                            <CheckCircleIcon className="w-4 h-4" />
-                                                            <span>Approve</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(booking.id, 'REJECTED')}
-                                                            className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
-                                                        >
-                                                            <XCircleIcon className="w-4 h-4" />
-                                                            <span>Reject</span>
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {booking.status !== 'BOOKED' && (
-                                                    <span className="text-slate-400 text-sm">No actions available</span>
-                                                )}
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedBooking(booking);
+                                                        setShowPassengerModal(true);
+                                                    }}
+                                                    className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                >
+                                                    <EyeIcon className="w-4 h-4" />
+                                                    <span>Passenger Details</span>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Passenger Details Modal */}
+            {showPassengerModal && selectedBooking && (
+                <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex justify-between items-center">
+                            <h3 className="text-xl font-bold text-white">Passenger Details</h3>
+                            <button
+                                onClick={() => setShowPassengerModal(false)}
+                                className="text-white hover:text-slate-200 transition-colors"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                            <div className="mb-6">
+                                <h4 className="text-lg font-semibold text-slate-900 mb-2">Booking Information</h4>
+                                <div className="bg-slate-50 rounded-lg p-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <span className="text-sm text-slate-500">Booking ID:</span>
+                                            <p className="font-semibold text-slate-900">#{selectedBooking.id}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Flight:</span>
+                                            <p className="font-semibold text-slate-900">{selectedBooking.flight.flightNumber}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Route:</span>
+                                            <p className="font-semibold text-slate-900">{selectedBooking.flight.fromCity} → {selectedBooking.flight.toCity}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Customer:</span>
+                                            <p className="font-semibold text-slate-900">{selectedBooking.user.name}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 className="text-lg font-semibold text-slate-900 mb-4">Passengers ({selectedBooking.passengers.length})</h4>
+                                <div className="space-y-4">
+                                    {selectedBooking.passengers.map((passenger, index) => (
+                                        <div key={index} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <h5 className="font-semibold text-slate-900 text-lg">{passenger.name}</h5>
+                                                    <div className="mt-2 grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <span className="text-sm text-slate-500">Age:</span>
+                                                            <p className="font-medium text-slate-900">{passenger.age} years</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm text-slate-500">Gender:</span>
+                                                            <p className="font-medium text-slate-900">{passenger.gender}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm text-slate-500">Class:</span>
+                                                            <p className="font-medium text-slate-900">{passenger.seatClass || 'Not assigned'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm text-slate-500">Seat Number:</span>
+                                                            <p className="font-bold text-blue-600 text-lg">{passenger.seatNumber || 'Not assigned'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="ml-4">
+                                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                        <UserIcon className="w-5 h-5 text-blue-600" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
