@@ -23,11 +23,11 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-6 text-lg">
-            <Link href="#destinations" className="hover:text-gray-300">
-              Destinations
+            <Link href="/" className="hover:text-gray-300">
+              Home
             </Link>
-            <Link href="#contact" className="hover:text-gray-300">
-              Contact
+            <Link href="/about" className="hover:text-gray-300">
+              About Us
             </Link>
             {authenticated ? (
               <>
@@ -106,11 +106,11 @@ export default function Navbar() {
             Book Flight
           </Link>
           <Link
-            href="#destinations"
+            href="/about"
             className="block px-3 py-2 rounded hover:bg-gray-700"
             onClick={() => setIsOpen(false)}
           >
-            Destinations
+            About Us
           </Link>
           <Link
             href="#reviews"
@@ -118,13 +118,6 @@ export default function Navbar() {
             onClick={() => setIsOpen(false)}
           >
             Reviews
-          </Link>
-          <Link
-            href="#contact"
-            className="block px-3 py-2 rounded hover:bg-gray-700"
-            onClick={() => setIsOpen(false)}
-          >
-            Contact
           </Link>
           {authenticated ? (
             <>

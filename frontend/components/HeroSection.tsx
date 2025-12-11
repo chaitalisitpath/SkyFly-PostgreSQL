@@ -20,14 +20,23 @@ const popularCities = [
 
 export default function HeroSection() {
   const router = useRouter();
+  
+  // State to track selected cities
+  const [selectedFromCity, setSelectedFromCity] = useState("");
+  const [selectedToCity, setSelectedToCity] = useState("");
 
   const destinations = [
-    { name: "Dubai", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80" },
-    { name: "London", img: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80" },
-    { name: "Singapore", img: "https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=800&q=80" },
-    { name: "Paris", img: "https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?auto=format&fit=crop&w=800&q=80" },
-    { name: "Tokyo", img: "https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=800&q=80" },
-    { name: "New York", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80" },
+    { name: "Ahmedabad", img: "ahmedabad.jpg" },
+    { name: "Mumbai", img: "mumbai.jpg" },
+    { name: "Banglore", img: "banglore.jpeg" },
+    { name: "Chennai", img: "chennai.jpg" },
+    { name: "Delhi", img: "delhi.jpg" },
+    { name: "Jaipur", img: "jaipur.jpg" },
+    { name: "Kolkata", img: "kolkata.jpg" },
+    { name: "Lucknow", img: "lucknow.jpg" },
+    { name: "Hydrabad", img: "hydrabad.jpg" },
+    { name: "Pune", img: "pune.jpg" },
+    
   ];
 
   // Carousel state
@@ -160,15 +169,19 @@ export default function HeroSection() {
                   </label>
                   <select
                     name="fromCity"
+                    value={selectedFromCity}
+                    onChange={(e) => setSelectedFromCity(e.target.value)}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer hover:border-blue-300"
                     required
                   >
                     <option value="">Select departure city</option>
-                    {popularCities.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
+                    {popularCities
+                      .filter((city) => city !== selectedToCity)
+                      .map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                   </select>
                   <div className="absolute right-4 top-[52px] pointer-events-none">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,15 +201,19 @@ export default function HeroSection() {
                   </label>
                   <select
                     name="toCity"
+                    value={selectedToCity}
+                    onChange={(e) => setSelectedToCity(e.target.value)}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer hover:border-blue-300"
                     required
                   >
                     <option value="">Select destination city</option>
-                    {popularCities.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
+                    {popularCities
+                      .filter((city) => city !== selectedFromCity)
+                      .map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                   </select>
                   <div className="absolute right-4 top-[52px] pointer-events-none">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

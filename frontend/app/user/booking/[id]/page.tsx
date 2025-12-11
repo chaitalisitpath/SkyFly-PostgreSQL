@@ -216,7 +216,7 @@ export default function BookingDetailsPage() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Price per seat:</span>
-                                                <span className="font-medium">₹{booking.flight.price.toLocaleString()}</span>
+                                                <span className="font-medium">₹{(booking.flight.price || 0).toLocaleString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -381,11 +381,9 @@ export default function BookingDetailsPage() {
                                 >
                                     Back to My Bookings
                                 </button>
-                                {booking.status === 'CONFIRMED' && (
-                                    <button className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
-                                        Download E-Ticket
-                                    </button>
-                                )}
+                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                                    Download E-Ticket
+                                </button>
                                 {booking.status === 'BOOKED' && (
                                     <button className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                                         Modify Booking

@@ -80,6 +80,7 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
   };
 
   const renderSeats = (seats: string[], className: string) => {
+    // Group seats by row number
     const rows: { [key: string]: string[] } = {};
     seats.forEach(seat => {
       const row = seat.slice(0, -2); // Remove last 2 chars (letter + class)
@@ -87,37 +88,60 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
       rows[row].push(seat);
     });
 
-    return Object.entries(rows).map(([row, rowSeats]) => {
-      const groups = getSeatGroups(rowSeats, className);
-      return (
-        <div key={row} className="flex items-center justify-center mb-2">
-          <span className="w-6 text-sm font-medium">{row}</span>
-          {groups.map((group, groupIndex) => (
-            <React.Fragment key={groupIndex}>
-              {groupIndex > 0 && <div className="w-8"></div>}
-              <div className="flex items-center space-x-2">
-                {group.map(seat => (
-                  <button
-                    key={seat}
-                    className={`w-8 h-8 text-xs font-medium rounded border ${
-                      occupiedSeats.includes(seat)
-                        ? 'bg-red-600 text-white border-red-600 cursor-not-allowed'
-                        : selectedSeats.includes(seat)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-green-200 text-gray-800 border-gray-300 hover:border-blue-400'
-                    }`}
-                    onClick={() => toggleSeat(seat)}
-                    title={`Seat ${seat} - ₹${getSeatPrice(seat).toLocaleString()}`}
-                  >
-                    {seat.slice(-2, -1)}
-                  </button>
-                ))}
-              </div>
-            </React.Fragment>
-          ))}
-        </div>
-      );
+    // Sort rows numerically (front to back of aircraft)
+    const sortedRows = Object.entries(rows).sort(([a], [b]) => parseInt(a) - parseInt(b));
+    
+    // Group seats by letter for vertical arrangement
+    const seatsByLetter: { [key: string]: string[] } = {};
+    seats.forEach(seat => {
+      const letter = seat.slice(-2, -1); // Get seat letter
+      if (!seatsByLetter[letter]) seatsByLetter[letter] = [];
+      seatsByLetter[letter].push(seat);
     });
+
+    // Sort letters alphabetically (A, B, C, D, E, F)
+    const sortedLetters = Object.entries(seatsByLetter).sort(([a], [b]) => a.localeCompare(b));
+
+    return (
+      <div className="flex flex-col space-y-1">
+        {/* Seat arrangement - letters vertically, rows horizontally */}
+        {sortedLetters.map(([letter, letterSeats]) => (
+          <div key={letter} className="flex items-center space-x-1">
+            {/* Seat letter label */}
+            <div className="w-6 text-center">
+              <span className="text-xs font-bold text-gray-600">{letter}</span>
+            </div>
+            
+            {/* Seats in this row going horizontally (front to back) */}
+            {sortedRows.map(([rowNumber]) => {
+              const seatInThisPosition = letterSeats.find(seat => seat.startsWith(rowNumber));
+              return (
+                <div key={`${letter}-${rowNumber}`} className="flex justify-center">
+                  {seatInThisPosition ? (
+                    <button
+                      className={`w-7 h-7 text-xs font-bold rounded border-2 transition-all duration-200 ${
+                        occupiedSeats.includes(seatInThisPosition)
+                          ? 'bg-red-500 text-white border-red-600 cursor-not-allowed'
+                          : selectedSeats.includes(seatInThisPosition)
+                          ? 'bg-blue-600 text-white border-blue-700 shadow-lg'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-md'
+                      }`}
+                      onClick={() => toggleSeat(seatInThisPosition)}
+                      title={`Seat ${seatInThisPosition} - ₹${getSeatPrice(seatInThisPosition).toLocaleString()}`}
+                    >
+                      {rowNumber}
+                    </button>
+                  ) : (
+                    <div className="w-7 h-7"></div> // Empty space for missing seats
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        
+      </div>
+    );
   };
 
   if (loading) return <div className="text-center py-8">Loading seat map...</div>;
@@ -131,33 +155,81 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
         Selected {selectedSeats.length} of {passengerCount} seats
       </p>
 
-      <div className="space-y-8">
-        {seatMap.first.length > 0 && (
-          <div>
-            <h4 className="text-md font-medium mb-4 text-center">First Class - ₹{(flight.firstPrice || 0).toLocaleString()}</h4>
+      {/* Aircraft Layout - Horizontal View (Left to Right) */}
+      <div className="bg-gray-100 rounded-full p-8 mx-auto max-w-6xl relative" style={{background: 'linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%)'}}>
+        {/* Aircraft Nose (Left) */}
+        <div className="absolute left-2 top-1/2 transform -translate-y-1/2">
+          <div className="w-8 h-16 bg-gray-300 rounded-l-full border-2 border-gray-400"></div>
+        </div>
+        
+        {/* Main Aircraft Body - Horizontal Sections */}
+        <div className="flex items-center justify-center space-x-8 px-12">
+          {/* First Class Section */}
+          {seatMap.first.length > 0 && (
             <div className="flex flex-col items-center">
-              {renderSeats(seatMap.first, 'first')}
+              <div className="mb-2">
+                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                  First Class
+                </span>
+              </div>
+              <div className="bg-yellow-50 rounded-lg p-3 border-2 border-yellow-200 min-w-fit">
+                {renderSeats(seatMap.first, 'first')}
+              </div>
+              <div className="mt-1 text-xs text-center">
+                <span className="text-yellow-800 font-medium">₹{(flight.firstPrice || 0).toLocaleString()}</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {seatMap.business.length > 0 && (
-          <div>
-            <h4 className="text-md font-medium mb-4 text-center">Business Class - ₹{(flight.businessPrice || 0).toLocaleString()}</h4>
-            <div className="flex flex-col items-center">
-              {renderSeats(seatMap.business, 'business')}
-            </div>
-          </div>
-        )}
+          {/* Section Divider */}
+          {seatMap.first.length > 0 && seatMap.business.length > 0 && (
+            <div className="w-px h-32 bg-gray-300"></div>
+          )}
 
-        {seatMap.economy.length > 0 && (
-          <div>
-            <h4 className="text-md font-medium mb-4 text-center">Economy Class - ₹{(flight.economyPrice || 0).toLocaleString()}</h4>
+          {/* Business Class Section */}
+          {seatMap.business.length > 0 && (
             <div className="flex flex-col items-center">
-              {renderSeats(seatMap.economy, 'economy')}
+              <div className="mb-2">
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                  Business Class
+                </span>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200 min-w-fit">
+                {renderSeats(seatMap.business, 'business')}
+              </div>
+              <div className="mt-1 text-xs text-center">
+                <span className="text-blue-800 font-medium">₹{(flight.businessPrice || 0).toLocaleString()}</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Section Divider */}
+          {(seatMap.first.length > 0 || seatMap.business.length > 0) && seatMap.economy.length > 0 && (
+            <div className="w-px h-32 bg-gray-300"></div>
+          )}
+
+          {/* Economy Class Section */}
+          {seatMap.economy.length > 0 && (
+            <div className="flex flex-col items-center">
+              <div className="mb-2">
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                  Economy Class
+                </span>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3 border-2 border-green-200 min-w-fit">
+                {renderSeats(seatMap.economy, 'economy')}
+              </div>
+              <div className="mt-1 text-xs text-center">
+                <span className="text-green-800 font-medium">₹{(flight.economyPrice || 0).toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Aircraft Tail (Right) */}
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+          <div className="w-6 h-12 bg-gray-300 rounded-r-lg border-2 border-gray-400"></div>
+        </div>
       </div>
 
       {/* Seat Legend */}
