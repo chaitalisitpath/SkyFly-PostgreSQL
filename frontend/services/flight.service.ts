@@ -13,8 +13,17 @@ export interface Flight {
   departureAirportTerminal: number;
   arrivalAirportTerminal: number;
   availableSeats: number;
-  price: number;
+  aircraftId: number;
+  economyPrice?: number;
+  businessPrice?: number;
+  firstPrice?: number;
   status: string;
+  passengers?: {
+    id: number;
+    name: string;
+    seatNumber: string;
+    seatClass: string;
+  }[];
 }
 
 export const getFlights = async (): Promise<Flight[]> => {
@@ -27,12 +36,42 @@ export const getFlightById = async (id: number): Promise<Flight> => {
   return response.data;
 };
 
-export const createFlight = async (flightData: Omit<Flight, 'id' | 'availableSeats'>): Promise<Flight> => {
+export const createFlight = async (flightData: {
+  flightNumber: string;
+  departureAirport: string;
+  arrivalAirport: string;
+  fromCity: string;
+  toCity: string;
+  departureTime: string;
+  arrivalTime: string;
+  departureAirportTerminal: number;
+  arrivalAirportTerminal: number;
+  aircraftId: number;
+  economyPrice?: number;
+  businessPrice?: number;
+  firstPrice?: number;
+  status?: string;
+}): Promise<Flight> => {
   const response = await api.post("/flights", flightData);
   return response.data;
 };
 
-export const updateFlight = async (id: number, flightData: Partial<Omit<Flight, 'id' | 'availableSeats'>>): Promise<Flight> => {
+export const updateFlight = async (id: number, flightData: Partial<{
+  flightNumber: string;
+  departureAirport: string;
+  arrivalAirport: string;
+  fromCity: string;
+  toCity: string;
+  departureTime: string;
+  arrivalTime: string;
+  departureAirportTerminal: number;
+  arrivalAirportTerminal: number;
+  aircraftId: number;
+  economyPrice?: number;
+  businessPrice?: number;
+  firstPrice?: number;
+  status?: string;
+}>): Promise<Flight> => {
   const response = await api.put(`/flights/${id}`, flightData);
   return response.data;
 };

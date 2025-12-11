@@ -4,11 +4,15 @@ export interface Passenger {
   name: string;
   age: number;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
+  seatClass?: 'ECONOMY' | 'BUSINESS' | 'FIRST';
+  seatNumber?: string;
 }
 
 export interface CreateBookingRequest {
   flightId: number;
+  passengerCount: number;
   passengers: Passenger[];
+  totalAmount?: number;
 }
 
 export interface Booking {
@@ -38,26 +42,26 @@ export interface Booking {
 }
 
 export const createBooking = async (bookingData: CreateBookingRequest): Promise<Booking> => {
-  const response = await api.post('/booking', bookingData);
+  const response = await api.post('/bookings', bookingData);
   return response.data;
 };
 
 export const getUserBookings = async (): Promise<Booking[]> => {
-  const response = await api.get('/booking');
+  const response = await api.get('/bookings');
   return response.data;
 };
 
 export const getBookingById = async (id: number): Promise<Booking> => {
-  const response = await api.get(`/booking/${id}`);
+  const response = await api.get(`/bookings/${id}`);
   return response.data;
 };
 
 export const getAllBookings = async (): Promise<Booking[]> => {
-  const response = await api.get('/booking/admin/all');
+  const response = await api.get('/bookings/admin/all');
   return response.data;
 };
 
 export const updateBookingStatus = async (id: number, status: 'CONFIRMED' | 'REJECTED'): Promise<Booking> => {
-  const response = await api.put(`/booking/admin/${id}/status`, { status });
+  const response = await api.put(`/bookings/admin/${id}/status`, { status });
   return response.data;
 };

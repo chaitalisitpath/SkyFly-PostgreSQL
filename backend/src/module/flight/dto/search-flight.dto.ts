@@ -10,9 +10,8 @@ export class SearchFlightDto {
   @IsString()
   toCity?: string;
 
-  // Accept ISO date strings like "2025-12-03"
+  // Accept date strings like "2025-12-03"
   @IsOptional()
-  @Type(() => String)
-  @IsISO8601()
+  @IsString()
   departureTime?: string;
 }

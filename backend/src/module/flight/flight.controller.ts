@@ -30,7 +30,7 @@ export class FlightController {
   }
 
   @Get('search')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async searchFlights(@Query() searchDto: SearchFlightDto) {
     return this.flightService.searchFlights(searchDto);
   }

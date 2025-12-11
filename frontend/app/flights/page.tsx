@@ -131,7 +131,23 @@ export default function Flights() {
 
                 {/* Price */}
                 <div className="text-center md:text-right">
-                  <p className="text-2xl font-bold text-gray-900">₹{flight.price.toLocaleString()}</p>
+                  <div className="space-y-1">
+                    {flight.economyPrice && (
+                      <p className="text-sm text-gray-600">
+                        Economy: ₹{flight.economyPrice.toLocaleString()}
+                      </p>
+                    )}
+                    {flight.businessPrice && (
+                      <p className="text-sm text-gray-600">
+                        Business: ₹{flight.businessPrice.toLocaleString()}
+                      </p>
+                    )}
+                    {flight.firstPrice && (
+                      <p className="text-sm text-gray-600">
+                        First: ₹{flight.firstPrice.toLocaleString()}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Action: Book is primary, More details is a link */}
@@ -241,8 +257,24 @@ export default function Flights() {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Price per ticket</p>
-                      <p className="text-2xl font-bold text-gray-900">₹{selectedFlight.price.toLocaleString()}</p>
+                      <p className="text-sm font-medium text-gray-500">Prices per ticket</p>
+                      <div className="space-y-1">
+                        {selectedFlight.economyPrice && (
+                          <p className="text-sm text-gray-600">
+                            Economy: ₹{selectedFlight.economyPrice.toLocaleString()}
+                          </p>
+                        )}
+                        {selectedFlight.businessPrice && (
+                          <p className="text-sm text-gray-600">
+                            Business: ₹{selectedFlight.businessPrice.toLocaleString()}
+                          </p>
+                        )}
+                        {selectedFlight.firstPrice && (
+                          <p className="text-sm text-gray-600">
+                            First: ₹{selectedFlight.firstPrice.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <button
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-200"

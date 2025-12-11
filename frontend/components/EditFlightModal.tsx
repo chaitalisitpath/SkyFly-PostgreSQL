@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { updateFlight, Flight } from "@/services/flight.service";
+import { getAircraft, Aircraft } from "@/services/aircraft.service";
 import { PencilIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface EditFlightModalProps {
@@ -53,9 +54,13 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
     arrivalAirportTerminal: "",
     departureTime: "",
     arrivalTime: "",
-    totalSeats: "",
-    ticketPrice: ""
+    aircraftId: "",
+    economyPrice: "",
+    businessPrice: "",
+    firstPrice: ""
   });
+
+  const [aircraft, setAircraft] = useState<Aircraft[]>([]);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
@@ -74,11 +79,25 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
         arrivalAirportTerminal: flight.arrivalAirportTerminal.toString(),
         departureTime: new Date(flight.departureTime).toISOString().slice(0, 16),
         arrivalTime: new Date(flight.arrivalTime).toISOString().slice(0, 16),
-        totalSeats: flight.totalSeats.toString(),
-        ticketPrice: flight.price.toString()
+        aircraftId: flight.aircraftId.toString(),
+        economyPrice: flight.economyPrice?.toString() || "",
+        businessPrice: flight.businessPrice?.toString() || "",
+        firstPrice: flight.firstPrice?.toString() || ""
       });
     }
   }, [flight]);
+
+  useEffect(() => {
+    const fetchAircraft = async () => {
+      try {
+        const data = await getAircraft();
+        setAircraft(data);
+      } catch (error) {
+        console.error("Error fetching aircraft:", error);
+      }
+    };
+    fetchAircraft();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -105,8 +124,11 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
     if (!formData.arrivalAirportTerminal) newErrors.arrivalAirportTerminal = "Arrival terminal is required";
     if (!formData.departureTime) newErrors.departureTime = "Departure date & time is required";
     if (!formData.arrivalTime) newErrors.arrivalTime = "Arrival date & time is required";
-    if (!formData.totalSeats) newErrors.totalSeats = "Total seats is required";
-    if (!formData.ticketPrice) newErrors.ticketPrice = "Ticket price is required";
+    if (!formData.aircraftId) newErrors.aircraftId = "Aircraft selection is required";
+    // At least one price should be provided
+    if (!formData.economyPrice && !formData.businessPrice && !formData.firstPrice) {
+      newErrors.economyPrice = "At least one price (Economy, Business, or First Class) is required";
+    }
 
     if (formData.departureTime && formData.arrivalTime) {
       const depTime = new Date(formData.departureTime);
@@ -135,10 +157,12 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
         toCity: formData.toCity,
         departureTime: new Date(formData.departureTime).toISOString(),
         arrivalTime: new Date(formData.arrivalTime).toISOString(),
-        totalSeats: parseInt(formData.totalSeats),
         departureAirportTerminal: parseInt(formData.departureAirportTerminal),
         arrivalAirportTerminal: parseInt(formData.arrivalAirportTerminal),
-        price: parseFloat(formData.ticketPrice),
+        aircraftId: parseInt(formData.aircraftId),
+        ...(formData.economyPrice && { economyPrice: parseFloat(formData.economyPrice) }),
+        ...(formData.businessPrice && { businessPrice: parseFloat(formData.businessPrice) }),
+        ...(formData.firstPrice && { firstPrice: parseFloat(formData.firstPrice) }),
         status: formData.status,
       };
 
@@ -164,7 +188,7 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
               <PencilIcon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-900">Edit Flight</h2>
+              <h2 className="text-2xl font-bold text-slate-900">Edit Flight</h2>
               <p className="text-slate-600 mt-1">Update flight details and schedule</p>
             </div>
           </div>
@@ -213,6 +237,27 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Aircraft Selection */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  Aircraft *
+                </label>
+                <select
+                  name="aircraftId"
+                  value={formData.aircraftId}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                >
+                  <option value="">Select aircraft</option>
+                  {aircraft.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.model} ({(item.economySeatCount || 0) + (item.businessSeatCount || 0) + (item.firstSeatCount || 0)} seats)
+                    </option>
+                  ))}
+                </select>
+                {errors.aircraftId && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.aircraftId}</span></p>}
               </div>
 
               {/* From City */}
@@ -375,37 +420,56 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
                 {errors.arrivalTime && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.arrivalTime}</span></p>}
               </div>
 
-              {/* Total Seats */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                  Total Seats *
-                </label>
-                <input
-                  type="number"
-                  name="totalSeats"
-                  value={formData.totalSeats}
-                  onChange={handleInputChange}
-                  min="1"
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                />
-                {errors.totalSeats && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.totalSeats}</span></p>}
-              </div>
 
-              {/* Ticket Price */}
+              {/* Economy Price */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                  Ticket Price (₹) *
+                  Economy Price (₹)
                 </label>
                 <input
                   type="number"
-                  name="ticketPrice"
-                  value={formData.ticketPrice}
+                  name="economyPrice"
+                  value={formData.economyPrice}
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                 />
-                {errors.ticketPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.ticketPrice}</span></p>}
+                {errors.economyPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.economyPrice}</span></p>}
+              </div>
+
+              {/* Business Price */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  Business Price (₹)
+                </label>
+                <input
+                  type="number"
+                  name="businessPrice"
+                  value={formData.businessPrice}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                />
+                {errors.businessPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.businessPrice}</span></p>}
+              </div>
+
+              {/* First Class Price */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  First Class Price (₹)
+                </label>
+                <input
+                  type="number"
+                  name="firstPrice"
+                  value={formData.firstPrice}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                />
+                {errors.firstPrice && <p className="text-red-600 text-sm mt-2 flex items-center space-x-1"><ExclamationTriangleIcon className="w-4 h-4" /><span>{errors.firstPrice}</span></p>}
               </div>
             </div>
           </form>

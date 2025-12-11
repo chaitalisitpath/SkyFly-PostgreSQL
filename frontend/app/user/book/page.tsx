@@ -2,15 +2,188 @@
 import Navbar from "@/components/Navbar";
 import { getFlightById, Flight } from "@/services/flight.service";
 import { createBooking, Passenger } from "@/services/booking.service";
+import { getSeatMap, SeatMap } from "@/services/aircraft.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
+interface SeatSelectionProps {
+  flight: Flight;
+  passengerCount: number;
+  passengers: Passenger[];
+  selectedSeats: string[];
+  onSeatsSelected: (seats: string[], passengers: Passenger[]) => void;
+  onContinue: () => void;
+  onBack: () => void;
+}
+
+function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSeatsSelected, onContinue, onBack }: SeatSelectionProps) {
+  const [seatMap, setSeatMap] = useState<SeatMap | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const occupiedSeats = flight.passengers ? flight.passengers.map(p => p.seatNumber) : [];
+
+  useEffect(() => {
+    const fetchSeatMap = async () => {
+      try {
+        const map = await getSeatMap(flight.aircraftId);
+        setSeatMap(map);
+      } catch (err) {
+        console.error('Failed to fetch seat map:', err);
+        setError('Failed to load seat map');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSeatMap();
+  }, [flight.aircraftId]);
+
+  const getSeatClass = (seat: string): 'ECONOMY' | 'BUSINESS' | 'FIRST' => {
+    if (seat.endsWith('E')) return 'ECONOMY';
+    if (seat.endsWith('B')) return 'BUSINESS';
+    if (seat.endsWith('F')) return 'FIRST';
+    return 'ECONOMY';
+  };
+
+  const getSeatPrice = (seat: string) => {
+    if (seat.endsWith('E')) return flight.economyPrice ? parseFloat(flight.economyPrice.toString()) : 0;
+    if (seat.endsWith('B')) return flight.businessPrice ? parseFloat(flight.businessPrice.toString()) : 0;
+    if (seat.endsWith('F')) return flight.firstPrice ? parseFloat(flight.firstPrice.toString()) : 0;
+    return 0;
+  };
+
+  const toggleSeat = (seat: string) => {
+    if (occupiedSeats.includes(seat)) return; // Cannot select occupied seats
+    let newSelectedSeats = [...selectedSeats];
+    if (selectedSeats.includes(seat)) {
+      newSelectedSeats = selectedSeats.filter(s => s !== seat);
+    } else if (selectedSeats.length < passengerCount) {
+      newSelectedSeats = [...selectedSeats, seat];
+    }
+
+    // Assign seats to passengers
+    const updatedPassengers = passengers.map((passenger, index) => ({
+      ...passenger,
+      seatClass: newSelectedSeats[index] ? getSeatClass(newSelectedSeats[index]) : undefined,
+      seatNumber: newSelectedSeats[index] || undefined,
+    }));
+
+    onSeatsSelected(newSelectedSeats, updatedPassengers);
+  };
+
+  const renderSeats = (seats: string[], className: string) => {
+    const rows: { [key: string]: string[] } = {};
+    seats.forEach(seat => {
+      const row = seat.slice(0, -2); // Remove last 2 chars (letter + class)
+      if (!rows[row]) rows[row] = [];
+      rows[row].push(seat);
+    });
+
+    return Object.entries(rows).map(([row, rowSeats]) => (
+      <div key={row} className="flex items-center justify-center space-x-2 mb-2">
+        <span className="w-6 text-sm font-medium">{row}</span>
+        {rowSeats.map(seat => (
+          <button
+            key={seat}
+            className={`w-8 h-8 text-xs font-medium rounded border ${
+              occupiedSeats.includes(seat)
+                ? 'bg-red-600 text-white border-red-600 cursor-not-allowed'
+                : selectedSeats.includes(seat)
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-green-200 text-gray-800 border-gray-300 hover:border-blue-400'
+            }`}
+            onClick={() => toggleSeat(seat)}
+            title={`Seat ${seat} - ₹${getSeatPrice(seat).toLocaleString()}`}
+          >
+            {seat.slice(-2, -1)}
+          </button>
+        ))}
+      </div>
+    ));
+  };
+
+  if (loading) return <div className="text-center py-8">Loading seat map...</div>;
+  if (error) return <div className="text-center py-8 text-red-600">{error}</div>;
+  if (!seatMap) return <div className="text-center py-8">No seat map available</div>;
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-4">Select Seats</h3>
+      <p className="text-sm text-gray-600 mb-6">
+        Selected {selectedSeats.length} of {passengerCount} seats
+      </p>
+
+      <div className="space-y-8">
+        {seatMap.first.length > 0 && (
+          <div>
+            <h4 className="text-md font-medium mb-4 text-center">First Class - ₹{(flight.firstPrice || 0).toLocaleString()}</h4>
+            <div className="flex flex-col items-center">
+              {renderSeats(seatMap.first, 'first')}
+            </div>
+          </div>
+        )}
+
+        {seatMap.business.length > 0 && (
+          <div>
+            <h4 className="text-md font-medium mb-4 text-center">Business Class - ₹{(flight.businessPrice || 0).toLocaleString()}</h4>
+            <div className="flex flex-col items-center">
+              {renderSeats(seatMap.business, 'business')}
+            </div>
+          </div>
+        )}
+
+        {seatMap.economy.length > 0 && (
+          <div>
+            <h4 className="text-md font-medium mb-4 text-center">Economy Class - ₹{(flight.economyPrice || 0).toLocaleString()}</h4>
+            <div className="flex flex-col items-center">
+              {renderSeats(seatMap.economy, 'economy')}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Seat Legend */}
+      <div className="mt-6 flex justify-center space-x-6">
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-green-200 border border-gray-300 rounded"></div>
+          <span className="text-sm">Available</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-blue-600 border border-blue-600 rounded"></div>
+          <span className="text-sm">Selected</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-red-600 border border-red-600 rounded"></div>
+          <span className="text-sm">Booked</span>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mt-8">
+        <button
+          onClick={onBack}
+          className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          Back
+        </button>
+        <button
+          onClick={onContinue}
+          disabled={selectedSeats.length !== passengerCount}
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 export default function BookFlight() {
-  const [step, setStep] = useState(1); // 1: search, 2: passengers, 3: confirmation
+  const [step, setStep] = useState(1); // 1: passengers, 2: seats, 3: confirmation
   const [passengerCount, setPassengerCount] = useState(1);
   const [passengers, setPassengers] = useState<Passenger[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -128,7 +301,9 @@ export default function BookFlight() {
     try {
       const bookingData = {
         flightId: selectedFlight.id,
+        passengerCount: passengerCount,
         passengers: passengers,
+        totalAmount: calculateTotal(),
       };
 
       const bookingResponse = await createBooking(bookingData);
@@ -149,8 +324,20 @@ export default function BookFlight() {
 
 
   const calculateTotal = () => {
-    if (!selectedFlight) return 0;
-    return passengerCount * selectedFlight.price;
+    if (!selectedFlight || !passengers.length) return 0;
+    return passengers.reduce((total, passenger) => {
+      let price = 0;
+      if (passenger.seatClass === 'ECONOMY') {
+        price = selectedFlight.economyPrice ? parseFloat(selectedFlight.economyPrice.toString()) : 0;
+      } else if (passenger.seatClass === 'BUSINESS') {
+        price = selectedFlight.businessPrice ? parseFloat(selectedFlight.businessPrice.toString()) : 0;
+      } else if (passenger.seatClass === 'FIRST') {
+        price = selectedFlight.firstPrice ? parseFloat(selectedFlight.firstPrice.toString()) : 0;
+      } else {
+        price = selectedFlight.economyPrice ? parseFloat(selectedFlight.economyPrice.toString()) : 0;
+      }
+      return total + price;
+    }, 0);
   };
 
 
@@ -205,6 +392,13 @@ export default function BookFlight() {
               <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
                   2
+                </div>
+                <span className="ml-2">Seats</span>
+              </div>
+              <div className={`flex-1 h-px mx-4 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+              <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 3 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'}`}>
+                  3
                 </div>
                 <span className="ml-2">Confirm</span>
               </div>
@@ -340,8 +534,24 @@ export default function BookFlight() {
             </form>
           )}
 
-          {/* Step 2: Confirmation */}
+          {/* Step 2: Seat Selection */}
           {step === 2 && selectedFlight && !bookingSuccess && (
+            <SeatSelection
+              flight={selectedFlight}
+              passengerCount={passengerCount}
+              passengers={passengers}
+              selectedSeats={selectedSeats}
+              onSeatsSelected={(seats, updatedPassengers) => {
+                setSelectedSeats(seats);
+                setPassengers(updatedPassengers);
+              }}
+              onContinue={() => setStep(3)}
+              onBack={() => setStep(1)}
+            />
+          )}
+
+          {/* Step 3: Confirmation */}
+          {step === 3 && selectedFlight && !bookingSuccess && (
             <div>
               <h3 className="text-lg font-semibold mb-4">Booking Confirmation</h3>
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
@@ -355,10 +565,6 @@ export default function BookFlight() {
                     <p className="font-semibold">{passengerCount}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Price per ticket</p>
-                    <p className="font-semibold">₹{selectedFlight.price.toLocaleString()}</p>
-                  </div>
-                  <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
                     <p className="font-semibold text-lg">₹{calculateTotal().toLocaleString()}</p>
                   </div>
@@ -368,7 +574,7 @@ export default function BookFlight() {
                   <ul className="space-y-1">
                     {passengers.map((passenger, index) => (
                       <li key={index} className="text-sm">
-                        {passenger.name} (Age: {passenger.age}, Gender: {passenger.gender})
+                        {passenger.name} (Age: {passenger.age}, Gender: {passenger.gender}, Seat: {selectedSeats[index] || 'Not assigned'})
                       </li>
                     ))}
                   </ul>
@@ -376,7 +582,7 @@ export default function BookFlight() {
               </div>
               <div className="flex justify-between items-center">
                 <button
-                  onClick={() => setStep(1)}
+                  onClick={() => setStep(2)}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
                   disabled={bookingLoading}
                 >

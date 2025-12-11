@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Logout from "@/components/Logout";
 import AddFlightModal from "@/components/AddFlightModal";
 import EditFlightModal from "@/components/EditFlightModal";
+import AddAircraftModal from "@/components/AddAircraftModal";
 import { getFlights, deleteFlight, Flight } from "@/services/flight.service";
+import { getAircraft, deleteAircraft, Aircraft } from "@/services/aircraft.service";
 import { getAllBookings, updateBookingStatus, Booking } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import {
@@ -26,7 +28,7 @@ import {
   RocketLaunchIcon
 } from "@heroicons/react/24/outline";
 
-type TabType = 'overview' | 'flights' | 'bookings' | 'users' | 'analytics';
+type TabType = 'overview' | 'flights' | 'aircraft' | 'bookings' | 'users' | 'analytics';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -65,6 +67,7 @@ export default function AdminDashboardPage() {
     const tabs = [
         { id: 'overview' as TabType, label: 'Overview', icon: ChartBarIcon },
         { id: 'flights' as TabType, label: 'Flight Management', icon: PaperAirplaneIcon },
+        { id: 'aircraft' as TabType, label: 'Aircraft Management', icon: RocketLaunchIcon },
         { id: 'bookings' as TabType, label: 'Booking Management', icon: TicketIcon },
         { id: 'users' as TabType, label: 'User Management', icon: UsersIcon },
         { id: 'analytics' as TabType, label: 'Analytics', icon: ChartBarSquareIcon },
@@ -123,6 +126,7 @@ export default function AdminDashboardPage() {
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                     {activeTab === 'overview' && <AdminOverviewTab />}
                     {activeTab === 'flights' && <FlightsManagementTab />}
+                    {activeTab === 'aircraft' && <AircraftManagementTab />}
                     {activeTab === 'bookings' && <BookingsManagementTab />}
                     {activeTab === 'users' && <UsersManagementTab />}
                     {activeTab === 'analytics' && <AnalyticsTab />}
@@ -399,10 +403,13 @@ function FlightsManagementTab() {
                                         Status
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                                        Seats
+                                        Economy Class
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                                        Price
+                                        Business Class
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        First Class
                                     </th>
                                     <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">
                                         Actions
@@ -440,17 +447,15 @@ function FlightsManagementTab() {
                                                 {flight.status.replace('_', ' ')}
                                             </span>
                                         </td>
+                                        
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-semibold text-slate-900">{flight.availableSeats}/{flight.totalSeats}</div>
-                                            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1">
-                                                <div
-                                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full"
-                                                    style={{ width: `${(flight.availableSeats / flight.totalSeats) * 100}%` }}
-                                                ></div>
-                                            </div>
+                                            <div className="text-lg font-bold text-emerald-600">₹{flight.economyPrice}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-lg font-bold text-emerald-600">₹{flight.price}</div>
+                                            <div className="text-lg font-bold text-emerald-600">₹{flight.businessPrice}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-lg font-bold text-emerald-600">₹{flight.firstPrice}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
@@ -737,6 +742,161 @@ function BookingsManagementTab() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// Aircraft Management Tab
+function AircraftManagementTab() {
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [aircraft, setAircraft] = useState<Aircraft[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchAircraft = async () => {
+        try {
+            const data = await getAircraft();
+            setAircraft(data);
+        } catch (error) {
+            console.error("Error fetching aircraft:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAircraft();
+    }, []);
+
+    const handleAddAircraftSuccess = () => {
+        alert("Aircraft added successfully!");
+        fetchAircraft();
+    };
+
+    const handleDeleteAircraft = async (aircraftId: number) => {
+        if (confirm("Are you sure you want to delete this aircraft?")) {
+            try {
+                await deleteAircraft(aircraftId);
+                alert("Aircraft deleted successfully!");
+                fetchAircraft();
+            } catch (error) {
+                console.error("Error deleting aircraft:", error);
+                alert("Error deleting aircraft");
+            }
+        }
+    };
+
+    return (
+        <div className="p-8">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-slate-900">Aircraft Management</h2>
+                    <p className="text-slate-600 mt-1">Manage your aircraft fleet, models, and configurations</p>
+                </div>
+                <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2"
+                >
+                    <RocketLaunchIcon className="w-5 h-5" />
+                    <span>Add New Aircraft</span>
+                </button>
+            </div>
+
+            {loading ? (
+                <div className="flex items-center justify-center py-16">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+                        <p className="text-slate-600 text-lg font-medium">Loading aircraft...</p>
+                        <p className="text-slate-400 text-sm">Please wait while we fetch your data</p>
+                    </div>
+                </div>
+            ) : aircraft.length === 0 ? (
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-12 text-center border border-slate-200">
+                    <div className="w-20 h-20 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <RocketLaunchIcon className="w-16 h-16" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">No Aircraft Found</h3>
+                    <p className="text-slate-600 mb-6 max-w-md mx-auto">Start building your aircraft fleet by adding your first aircraft. Configure models, seat layouts, and manage your aviation assets.</p>
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                    >
+                        Add Your First Aircraft
+                    </button>
+                </div>
+            ) : (
+                <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                    <div className="overflow-auto max-h-110">
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Aircraft Model
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Economy Seats
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Business Seats
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        First Class Seats
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Total Seats
+                                    </th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-slate-100">
+                                {aircraft.map((item) => (
+                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors duration-150">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                                    <RocketLaunchIcon className="w-4 h-4 text-purple-600" />
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-900">{item.model}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-slate-900">{item.economySeatCount || 0}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-slate-900">{item.businessSeatCount || 0}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-slate-900">{item.firstSeatCount || 0}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-lg font-bold text-slate-900">
+                                                {(item.economySeatCount || 0) + (item.businessSeatCount || 0) + (item.firstSeatCount || 0)}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex justify-end space-x-2">
+                                                <button
+                                                    onClick={() => handleDeleteAircraft(item.id)}
+                                                    className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            <AddAircraftModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onSuccess={handleAddAircraftSuccess}
+            />
         </div>
     );
 }
