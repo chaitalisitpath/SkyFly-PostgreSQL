@@ -126,4 +126,40 @@ export class AircraftService {
       orderBy: { model: 'asc' }
     });
   }
+
+  // Get seat map for aircraft
+  async getSeatMap(id: number) {
+    const aircraft = await this.prisma.aircraft.findUnique({
+      where: { id }
+    });
+
+    if (!aircraft) {
+      throw new NotFoundException('Aircraft not found');
+    }
+
+    const seatMap = {
+      economy: this.generateSeats(aircraft.economySeatCount || 0, 5, 'E'), // A-E, E for economy
+      business: this.generateSeats(aircraft.businessSeatCount || 0, 4, 'B'), // A-D, B for business
+      first: this.generateSeats(aircraft.firstSeatCount || 0, 2, 'F'), // A-B, F for first
+    };
+
+    return seatMap;
+  }
+
+  // Helper to generate seats
+  private generateSeats(count: number, columns: number, classSuffix: string): string[] {
+    const seats: string[] = [];
+    const rows = Math.ceil(count / columns);
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    for (let row = 1; row <= rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        if (seats.length < count) {
+          seats.push(`${row}${letters[col]}${classSuffix}`);
+        }
+      }
+    }
+
+    return seats;
+  }
 }

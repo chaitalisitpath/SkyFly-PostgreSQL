@@ -38,6 +38,12 @@ export class AircraftController {
     return this.aircraftService.getAircraftById(id);
   }
 
+  @Get(':id/seatmap')
+  @UseGuards(JwtAuthGuard)
+  async getSeatMap(@Param('id', ParseIntPipe) id: number) {
+    return this.aircraftService.getSeatMap(id);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @HttpCode(HttpStatus.CREATED)
