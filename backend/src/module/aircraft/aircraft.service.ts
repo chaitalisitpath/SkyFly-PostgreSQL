@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client';
 export class AircraftService {
   constructor(private prisma: PrismaService) {}
 
-  // Get all aircraft
+  // Get all aircrafts
   async getAllAircraft() {
     return this.prisma.aircraft.findMany({
       include: {
