@@ -90,7 +90,7 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
 
     // Sort rows numerically (front to back of aircraft)
     const sortedRows = Object.entries(rows).sort(([a], [b]) => parseInt(a) - parseInt(b));
-    
+
     // Group seats by letter for vertical arrangement
     const seatsByLetter: { [key: string]: string[] } = {};
     seats.forEach(seat => {
@@ -108,10 +108,10 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
         {sortedLetters.map(([letter, letterSeats]) => (
           <div key={letter} className="flex items-center space-x-1">
             {/* Seat letter label */}
-            <div className="w-6 text-center">
+            <div className="w-8 md:w-6 text-center">
               <span className="text-xs font-bold text-gray-600">{letter}</span>
             </div>
-            
+
             {/* Seats in this row going horizontally (front to back) */}
             {sortedRows.map(([rowNumber]) => {
               const seatInThisPosition = letterSeats.find(seat => seat.startsWith(rowNumber));
@@ -119,27 +119,26 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
                 <div key={`${letter}-${rowNumber}`} className="flex justify-center">
                   {seatInThisPosition ? (
                     <button
-                      className={`w-7 h-7 text-xs font-bold rounded border-2 transition-all duration-200 ${
-                        occupiedSeats.includes(seatInThisPosition)
+                      className={`w-8 h-8 md:w-7 md:h-7 text-xs font-bold rounded border-2 transition-all duration-200 ${occupiedSeats.includes(seatInThisPosition)
                           ? 'bg-red-500 text-white border-red-600 cursor-not-allowed'
                           : selectedSeats.includes(seatInThisPosition)
-                          ? 'bg-blue-600 text-white border-blue-700 shadow-lg'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-md'
-                      }`}
+                            ? 'bg-blue-600 text-white border-blue-700 shadow-lg'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-md'
+                        }`}
                       onClick={() => toggleSeat(seatInThisPosition)}
                       title={`Seat ${seatInThisPosition} - ₹${getSeatPrice(seatInThisPosition).toLocaleString()}`}
                     >
                       {rowNumber}
                     </button>
                   ) : (
-                    <div className="w-7 h-7"></div> // Empty space for missing seats
+                    <div className="w-8 h-8 md:w-7 md:h-7"></div> // Empty space for missing seats
                   )}
                 </div>
               );
             })}
           </div>
         ))}
-        
+
       </div>
     );
   };
@@ -149,24 +148,27 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
   if (!seatMap) return <div className="text-center py-8">No seat map available</div>;
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold mb-4">Select Seats</h3>
-      <p className="text-sm text-gray-600 mb-6">
+    <div className="max-w-7xl mx-auto">
+      <h3 className="text-lg font-semibold mb-4 text-center">Select Seats</h3>
+      <p className="text-sm text-gray-600 mb-6 text-center">
         Selected {selectedSeats.length} of {passengerCount} seats
       </p>
 
-      {/* Aircraft Layout - Horizontal View (Left to Right) */}
-      <div className="bg-gray-100 rounded-full p-8 mx-auto max-w-6xl relative" style={{background: 'linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%)'}}>
-        {/* Aircraft Nose (Left) */}
-        <div className="absolute left-2 top-1/2 transform -translate-y-1/2">
-          <div className="w-8 h-16 bg-gray-300 rounded-l-full border-2 border-gray-400"></div>
+      {/* Aircraft Layout - Full width single row */}
+      <div
+        className="p-4 md:p-8 relative overflow-hidden 
+             rounded-l-full"
+        style={{ background: "linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%)" }}
+      >        {/* Aircraft Nose (Left) */}
+        <div className="absolute left-1 md:left-2 top-1/2 transform -translate-y-1/2">
+          <div className="w-6 h-12 md:w-8 md:h-16 bg-gray-300 rounded-l-full border-2 border-gray-400"></div>
         </div>
-        
-        {/* Main Aircraft Body - Horizontal Sections */}
-        <div className="flex items-center justify-center space-x-8 px-12">
+
+        {/* Main Aircraft Body - Single row, no wrap */}
+        <div className="flex items-start justify-center gap-4 md:gap-8 px-2 md:px-6 w-full flex-nowrap">
           {/* First Class Section */}
           {seatMap.first.length > 0 && (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center shrink">
               <div className="mb-2">
                 <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
                   First Class
@@ -183,12 +185,12 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
 
           {/* Section Divider */}
           {seatMap.first.length > 0 && seatMap.business.length > 0 && (
-            <div className="w-px h-32 bg-gray-300"></div>
+            <div className="hidden md:block w-px h-32 bg-gray-300"></div>
           )}
 
           {/* Business Class Section */}
           {seatMap.business.length > 0 && (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center shrink">
               <div className="mb-2">
                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                   Business Class
@@ -205,12 +207,12 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
 
           {/* Section Divider */}
           {(seatMap.first.length > 0 || seatMap.business.length > 0) && seatMap.economy.length > 0 && (
-            <div className="w-px h-32 bg-gray-300"></div>
+            <div className="hidden md:block w-px h-32 bg-gray-300"></div>
           )}
 
           {/* Economy Class Section */}
           {seatMap.economy.length > 0 && (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center shrink">
               <div className="mb-2">
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                   Economy Class
@@ -225,10 +227,10 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
             </div>
           )}
         </div>
-        
+
         {/* Aircraft Tail (Right) */}
-        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-          <div className="w-6 h-12 bg-gray-300 rounded-r-lg border-2 border-gray-400"></div>
+        <div className="absolute right-4 md:right-2 top-1/2 transform -translate-y-1/2 hidden md:block">
+          <div className="w-4 h-8 md:w-6 md:h-12 bg-gray-300 rounded-r-lg border-2 border-gray-400"></div>
         </div>
       </div>
 
@@ -433,7 +435,7 @@ export default function BookFlight() {
   return (
     <>
       <Navbar />
-      <div className="max-w-4xl mx-auto mt-8 px-4">
+      <div className="max-w-7xl mx-auto mt-8 px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           {/* Flight Summary */}
           {selectedFlight && step >= 1 && (
@@ -623,21 +625,7 @@ export default function BookFlight() {
             </form>
           )}
 
-          {/* Step 2: Seat Selection */}
-          {step === 2 && selectedFlight && !bookingSuccess && (
-            <SeatSelection
-              flight={selectedFlight}
-              passengerCount={passengerCount}
-              passengers={passengers}
-              selectedSeats={selectedSeats}
-              onSeatsSelected={(seats, updatedPassengers) => {
-                setSelectedSeats(seats);
-                setPassengers(updatedPassengers);
-              }}
-              onContinue={() => setStep(3)}
-              onBack={() => setStep(1)}
-            />
-          )}
+          {/* Step 2: Seat Selection (moved to full-width section below) */}
 
           {/* Step 3: Confirmation */}
           {step === 3 && selectedFlight && !bookingSuccess && (
@@ -689,6 +677,24 @@ export default function BookFlight() {
           )}
         </div>
       </div>
+
+      {/* Full-width Seat Selection section */}
+      {step === 2 && selectedFlight && !bookingSuccess && (
+        <div className="w-full mt-8 px-4">
+          <SeatSelection
+            flight={selectedFlight}
+            passengerCount={passengerCount}
+            passengers={passengers}
+            selectedSeats={selectedSeats}
+            onSeatsSelected={(seats, updatedPassengers) => {
+              setSelectedSeats(seats);
+              setPassengers(updatedPassengers);
+            }}
+            onContinue={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
+        </div>
+      )}
     </>
   );
 }
