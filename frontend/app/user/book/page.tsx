@@ -102,40 +102,56 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
     // Sort letters alphabetically (A, B, C, D, E, F)
     const sortedLetters = Object.entries(seatsByLetter).sort(([a], [b]) => a.localeCompare(b));
 
+    // Define partition gaps between seat letters (rows) for each class
+    const getGapAfterLetter = (classType: string) => {
+      if (classType === 'economy') return 'C'; // Gap between C and D
+      if (classType === 'business') return 'B'; // Gap between B and C
+      if (classType === 'first') return 'A'; // Gap between A and B
+      return null;
+    };
+
+    const gapAfterLetter = getGapAfterLetter(className);
+
     return (
       <div className="flex flex-col space-y-1">
         {/* Seat arrangement - letters vertically, rows horizontally */}
-        {sortedLetters.map(([letter, letterSeats]) => (
-          <div key={letter} className="flex items-center space-x-1">
-            {/* Seat letter label */}
-            <div className="w-8 md:w-6 text-center">
-              <span className="text-xs font-bold text-gray-600">{letter}</span>
-            </div>
+        {sortedLetters.map(([letter, letterSeats], idx) => (
+          <div key={letter}>
+            <div className="flex items-center space-x-1">
+              {/* Seat letter label */}
+              <div className="w-8 md:w-6 text-center">
+                <span className="text-xs font-bold text-gray-600">{letter}</span>
+              </div>
 
-            {/* Seats in this row going horizontally (front to back) */}
-            {sortedRows.map(([rowNumber]) => {
-              const seatInThisPosition = letterSeats.find(seat => seat.startsWith(rowNumber));
-              return (
-                <div key={`${letter}-${rowNumber}`} className="flex justify-center">
-                  {seatInThisPosition ? (
-                    <button
-                      className={`w-8 h-8 md:w-7 md:h-7 text-xs font-bold rounded border-2 transition-all duration-200 ${occupiedSeats.includes(seatInThisPosition)
-                          ? 'bg-red-500 text-white border-red-600 cursor-not-allowed'
-                          : selectedSeats.includes(seatInThisPosition)
-                            ? 'bg-blue-600 text-white border-blue-700 shadow-lg'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-md'
-                        }`}
-                      onClick={() => toggleSeat(seatInThisPosition)}
-                      title={`Seat ${seatInThisPosition} - ₹${getSeatPrice(seatInThisPosition).toLocaleString()}`}
-                    >
-                      {rowNumber}
-                    </button>
-                  ) : (
-                    <div className="w-8 h-8 md:w-7 md:h-7"></div> // Empty space for missing seats
-                  )}
-                </div>
-              );
-            })}
+              {/* Seats in this row going horizontally (front to back) */}
+              {sortedRows.map(([rowNumber]) => {
+                const seatInThisPosition = letterSeats.find(seat => seat.startsWith(rowNumber));
+                return (
+                  <div key={`${letter}-${rowNumber}`} className="flex justify-center">
+                    {seatInThisPosition ? (
+                      <button
+                        className={`w-8 h-8 md:w-7 md:h-7 text-xs font-bold rounded border-2 transition-all duration-200 ${occupiedSeats.includes(seatInThisPosition)
+                            ? 'bg-red-500 text-white border-red-600 cursor-not-allowed'
+                            : selectedSeats.includes(seatInThisPosition)
+                              ? 'bg-blue-600 text-white border-blue-700 shadow-lg'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-md'
+                          }`}
+                        onClick={() => toggleSeat(seatInThisPosition)}
+                        title={`Seat ${seatInThisPosition} - ₹${getSeatPrice(seatInThisPosition).toLocaleString()}`}
+                      >
+                        {rowNumber}
+                      </button>
+                    ) : (
+                      <div className="w-8 h-8 md:w-7 md:h-7"></div> // Empty space for missing seats
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Gap between seat rows */}
+            {letter === gapAfterLetter && idx < sortedLetters.length - 1 && (
+              <div className="h-3 bg-gray-200 rounded my-1"></div>
+            )}
           </div>
         ))}
 
@@ -165,10 +181,10 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
         </div>
 
         {/* Main Aircraft Body - Single row, no wrap */}
-        <div className="flex items-start justify-center gap-4 md:gap-8 px-2 md:px-6 w-full flex-nowrap">
+        <div className="flex items-center justify-center gap-4 md:gap-8 px-2 md:px-6 w-full flex-nowrap">
           {/* First Class Section */}
           {seatMap.first.length > 0 && (
-            <div className="flex flex-col items-center shrink">
+            <div className="flex flex-col items-center shrink justify-center">
               <div className="mb-2">
                 <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
                   First Class
@@ -190,7 +206,7 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
 
           {/* Business Class Section */}
           {seatMap.business.length > 0 && (
-            <div className="flex flex-col items-center shrink">
+            <div className="flex flex-col items-center shrink justify-center">
               <div className="mb-2">
                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                   Business Class
@@ -212,7 +228,7 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
 
           {/* Economy Class Section */}
           {seatMap.economy.length > 0 && (
-            <div className="flex flex-col items-center shrink">
+            <div className="flex flex-col items-center shrink justify-center">
               <div className="mb-2">
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                   Economy Class
