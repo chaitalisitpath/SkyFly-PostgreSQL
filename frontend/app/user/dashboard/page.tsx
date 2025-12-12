@@ -273,14 +273,6 @@ function BookingsTab() {
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-gray-900">{booking.flight.flightNumber}</h3>
-                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${booking.status === 'CONFIRMED'
-                                            ? 'bg-green-100 text-green-800'
-                                            : booking.status === 'BOOKED'
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                            {booking.status}
-                                        </span>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
@@ -320,12 +312,9 @@ function BookingsTab() {
                                 <div className="flex flex-col space-y-2">
                                     <button
                                         onClick={() => router.push(`/user/booking/${booking.id}`)}
-                                        className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1"
+                                        className="bg-blue-200 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1"
                                     >
-                                        <span>View Details</span>
-                                    </button>
-                                    <button className="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1">
-                                        <span>Cancel</span>
+                                        <span>View Booking Details</span>
                                     </button>
                                 </div>
                             </div>

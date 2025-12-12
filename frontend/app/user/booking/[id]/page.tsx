@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getBookingById, Booking } from "@/services/booking.service";
+import { getBookingById, Booking, deleteBooking } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import {
     ClockIcon,
@@ -28,6 +28,8 @@ export default function BookingDetailsPage() {
     const [booking, setBooking] = useState<Booking | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelLoading, setCancelLoading] = useState(false);
 
     // Role-based access control - USER and ADMIN can access this page
     useRoleAccess(['USER', 'ADMIN']);
@@ -96,6 +98,23 @@ export default function BookingDetailsPage() {
         });
     };
 
+    const handleCancelBooking = async () => {
+        if (!booking) return;
+
+        setCancelLoading(true);
+        try {
+            await deleteBooking(booking.id);
+            // Redirect to dashboard after successful cancellation
+            router.push('/user/dashboard');
+        } catch (err: any) {
+            console.error('Failed to cancel booking:', err);
+            setError(err.response?.data?.message || 'Failed to cancel booking');
+        } finally {
+            setCancelLoading(false);
+            setShowCancelModal(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -153,10 +172,7 @@ export default function BookingDetailsPage() {
                                 <p className="text-sm text-gray-500">Booking #{booking.id}</p>
                             </div>
                         </div>
-                        <div className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm flex items-center space-x-2 ${getStatusColor(booking.status)}`}>
-                            <span className="text-lg">{getStatusIcon(booking.status)}</span>
-                            <span>{booking.status}</span>
-                        </div>
+
                     </div>
                 </div>
             </header>
@@ -273,24 +289,23 @@ export default function BookingDetailsPage() {
                                             <p className="text-sm text-gray-600">{formatDateTime(booking.createdAt)}</p>
                                         </div>
                                     </div>
-                                    {booking.status === 'CONFIRMED' && (
-                                        <div className="flex items-start space-x-4">
-                                            <div className="w-3 h-3 bg-gray-500 rounded-full mt-2"></div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-900">Booking Confirmed</p>
-                                                <p className="text-sm text-gray-600">Your booking has been approved by our team</p>
-                                            </div>
+
+                                    <div className="flex items-start space-x-4">
+                                        <div className="w-3 h-3 bg-gray-500 rounded-full mt-2"></div>
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-900">Booking Confirmed</p>
+                                            <p className="text-sm text-gray-600">Your booking has been approved by our team</p>
                                         </div>
-                                    )}
-                                    {booking.status === 'REJECTED' && (
-                                        <div className="flex items-start space-x-4">
-                                            <div className="w-3 h-3 bg-gray-500 rounded-full mt-2"></div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-900">Booking Rejected</p>
-                                                <p className="text-sm text-gray-600">Your booking could not be processed</p>
-                                            </div>
+                                    </div>
+
+                                    <div className="flex items-start space-x-4">
+                                        <div className="w-3 h-3 bg-gray-500 rounded-full mt-2"></div>
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-900">Booking Rejected</p>
+                                            <p className="text-sm text-gray-600">Your booking could not be processed</p>
                                         </div>
-                                    )}
+                                    </div>
+
                                     <div className="flex items-start space-x-4">
                                         <div className="w-3 h-3 bg-gray-500 rounded-full mt-2"></div>
                                         <div className="flex-1">
@@ -384,16 +399,49 @@ export default function BookingDetailsPage() {
                                 <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                                     Download E-Ticket
                                 </button>
-                                {booking.status === 'BOOKED' && (
-                                    <button className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
-                                        Modify Booking
-                                    </button>
-                                )}
+                                <button
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                                >
+                                    Cancel Booking
+                                </button>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Cancel Booking Confirmation Modal */}
+            {showCancelModal && (
+                <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <div className="flex items-center mb-4">
+                            <ExclamationTriangleIcon className="w-6 h-6 text-red-500 mr-3" />
+                            <h3 className="text-lg font-semibold text-gray-900">Cancel Booking</h3>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to cancel this booking? This action cannot be undone and you may lose your booking amount depending on the cancellation policy.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setShowCancelModal(false)}
+                                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                                disabled={cancelLoading}
+                            >
+                                Keep Booking
+                            </button>
+                            <button
+                                onClick={handleCancelBooking}
+                                disabled={cancelLoading}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {cancelLoading ? 'Cancelling...' : 'Cancel Booking'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

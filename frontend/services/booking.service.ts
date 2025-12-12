@@ -65,3 +65,7 @@ export const updateBookingStatus = async (id: number, status: 'CONFIRMED' | 'REJ
   const response = await api.put(`/bookings/admin/${id}/status`, { status });
   return response.data;
 };
+
+export const deleteBooking = async (id: number): Promise<void> => {
+  await api.delete(`/bookings/${id}`);
+};
