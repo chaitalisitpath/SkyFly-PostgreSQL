@@ -3,10 +3,11 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
 import { PassengerDto } from './dto/passenger.dto';
 import { Prisma } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class BookingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private mailService: MailService) {}
 
   private async validateSeats(flight: any, passengers: PassengerDto[]) {
     const { aircraft } = flight;
@@ -82,7 +83,7 @@ export class BookingService {
 
     // Use transaction to ensure consistency
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const booking = await this.prisma.$transaction(async (tx) => {
         // Create the booking
         const booking = await tx.booking.create({
           data: {
@@ -135,6 +136,13 @@ export class BookingService {
           },
         });
       });
+
+      // Send confirmation email after successful booking
+      if (booking) {
+        await this.mailService.sendBookingEmail(booking.user.email, booking.id.toString());
+      }
+
+      return booking;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new BadRequestException('Failed to create booking');
