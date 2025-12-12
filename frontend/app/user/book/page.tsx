@@ -57,9 +57,14 @@ function SeatSelection({ flight, passengerCount, passengers, selectedSeats, onSe
     if (occupiedSeats.includes(seat)) return; // Cannot select occupied seats
     let newSelectedSeats = [...selectedSeats];
     if (selectedSeats.includes(seat)) {
+      // Deselect if already selected
       newSelectedSeats = selectedSeats.filter(s => s !== seat);
     } else if (selectedSeats.length < passengerCount) {
+      // Add seat if haven't reached passenger count
       newSelectedSeats = [...selectedSeats, seat];
+    } else {
+      // If at capacity, replace the first selected seat with the new one
+      newSelectedSeats = [...selectedSeats.slice(0, -1), seat];
     }
 
     // Assign seats to passengers
