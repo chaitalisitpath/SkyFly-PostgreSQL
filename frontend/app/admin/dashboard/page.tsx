@@ -6,6 +6,7 @@ import Logout from "@/components/Logout";
 import AddFlightModal from "@/components/AddFlightModal";
 import EditFlightModal from "@/components/EditFlightModal";
 import AddAircraftModal from "@/components/AddAircraftModal";
+import EditAircraftModal from "@/components/EditAircraftModal";
 import { getFlights, deleteFlight, Flight } from "@/services/flight.service";
 import { getAircraft, deleteAircraft, Aircraft } from "@/services/aircraft.service";
 import { getAllBookings, updateBookingStatus, Booking } from "@/services/booking.service";
@@ -783,8 +784,10 @@ function BookingsManagementTab() {
 // Aircraft Management Tab
 function AircraftManagementTab() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [aircraft, setAircraft] = useState<Aircraft[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(null);
 
     const fetchAircraft = async () => {
         try {
@@ -803,6 +806,11 @@ function AircraftManagementTab() {
 
     const handleAddAircraftSuccess = () => {
         alert("Aircraft added successfully!");
+        fetchAircraft();
+    };
+
+    const handleEditAircraftSuccess = () => {
+        alert("Aircraft updated successfully!");
         fetchAircraft();
     };
 
@@ -911,6 +919,15 @@ function AircraftManagementTab() {
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
                                                 <button
+                                                    onClick={() => {
+                                                        setSelectedAircraft(item);
+                                                        setIsEditModalOpen(true);
+                                                    }}
+                                                    className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
+                                                >
+                                                    <PencilIcon className="w-4 h-4" />
+                                                </button>
+                                                <button
                                                     onClick={() => handleDeleteAircraft(item.id)}
                                                     className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center space-x-1"
                                                 >
@@ -930,6 +947,13 @@ function AircraftManagementTab() {
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 onSuccess={handleAddAircraftSuccess}
+            />
+
+            <EditAircraftModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSuccess={handleEditAircraftSuccess}
+                aircraft={selectedAircraft}
             />
         </div>
     );
