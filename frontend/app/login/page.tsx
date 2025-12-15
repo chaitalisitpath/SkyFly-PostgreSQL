@@ -201,7 +201,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md px-6">
           
           {/* Logo */}
-          <h1 className="text-2xl font-semibold text-blue-900 mb-2">
+          <h1 className="text-3xl font-semibold text-blue-900 mb-2">
             SkyFly
           </h1>
           <p className="text-gray-600 mb-8 text-sm">
