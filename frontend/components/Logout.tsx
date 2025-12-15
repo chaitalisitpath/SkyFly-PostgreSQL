@@ -19,7 +19,7 @@ const Logout: React.FC = () => {
     <>
       {/* Logout Button */}
       <button
-        className="p-2 text-slate-100 hover:text-white hover:bg-slate-700 rounded-lg transition-colors duration-200"
+        className="p-2 text-black rounded-lg transition-colors duration-200"
         onClick={() => setIsModalOpen(true)}
         title="Logout"
       >
@@ -28,7 +28,7 @@ const Logout: React.FC = () => {
 
       {/* Modal Portal - renders at document body level */}
       {isModalOpen && createPortal(
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[9999] p-4">
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-md flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl border border-gray-200 transform transition-all duration-300 scale-100">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">

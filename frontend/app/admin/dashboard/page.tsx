@@ -75,9 +75,9 @@ export default function AdminDashboardPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen">
             {/* Header */}
-            <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl border-b border-slate-700">
+            <header className="shadow-xl border-b">
                 <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         <div className="flex items-center space-x-3">
@@ -85,16 +85,15 @@ export default function AdminDashboardPage() {
                                 <span className="text-white font-bold text-lg">SF</span>
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">SkyFly Admin</h1>
-                                <p className="text-xs text-slate-300">Management Dashboard</p>
+                                <h1 className="text-2xl font-bold">SkyFly Admin</h1>
+                                <p className="text-xs">Management Dashboard</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-6">
                             <div className="text-right">
-                                <p className="text-xs text-slate-400">Administrator</p>
-                                <p className="text-sm font-semibold text-white">Admin User</p>
+                                <p className="text-xs text-black">Administrator</p>
+                                <p className="text-sm font-semibold text-black">Admin User</p>
                             </div>
-                            <div className="w-px h-8 bg-slate-600"></div>
                             <Logout />
                         </div>
                     </div>

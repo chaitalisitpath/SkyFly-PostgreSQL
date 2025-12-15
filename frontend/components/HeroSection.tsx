@@ -95,7 +95,7 @@ export default function HeroSection() {
     };
 
     if (!paused) {
-      autoplayRef.current = window.setInterval(play, 3000);
+      autoplayRef.current = window.setInterval(play, 2000);
     }
 
     return () => {

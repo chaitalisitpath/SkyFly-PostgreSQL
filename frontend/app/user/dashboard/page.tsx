@@ -17,13 +17,14 @@ import {
     PaperAirplaneIcon,
     CogIcon
 } from "@heroicons/react/24/outline";
+import Navbar from "@/components/Navbar";
 
-type TabType = 'dashboard' | 'bookings' | 'profile';
+type TabType = 'bookings' | 'profile';
 
 export default function DashboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+    const [activeTab, setActiveTab] = useState<TabType>('bookings');
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     // Role-based access control - only USER can access this page
@@ -51,7 +52,6 @@ export default function DashboardPage() {
     }
 
     const tabs = [
-        { id: 'dashboard' as TabType, label: 'Dashboard', icon: ChartBarIcon },
         { id: 'bookings' as TabType, label: 'My Bookings', icon: TicketIcon },
         { id: 'profile' as TabType, label: 'Profile', icon: UserIcon },
     ];
@@ -59,30 +59,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
             {/* Header */}
-            <header className="bg-black/80 backdrop-blur-lg shadow-lg border-b border-white/20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-20">
-                        <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <span className="text-white font-bold text-xl">SF</span>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-white">SkyFly Airlines</h1>
-                                <p className="text-xs text-white">Your Travel Companion</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-6">
-                            <div className="text-right">
-                                <p className="text-sm text-white">Welcome back!</p>
-                                <p className="text-lg font-semibold text-white">{user.name}</p>
-                            </div>
-                            {/* <div className="w-px h-8 bg-white"></div> */}
-                            <Logout />
-                        </div>
-                    </div>
-                </div>
-            </header>
-
+            <Navbar/>
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Tab Navigation */}
@@ -106,7 +83,6 @@ export default function DashboardPage() {
 
                 {/* Tab Content */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-                    {activeTab === 'dashboard' && <DashboardTab />}
                     {activeTab === 'bookings' && <BookingsTab />}
                     {activeTab === 'profile' && <ProfileTab />}
                 </div>
@@ -115,86 +91,6 @@ export default function DashboardPage() {
     );
 }
 
-// Dashboard Overview Tab
-function DashboardTab() {
-    return (
-        <div className="p-8">
-            <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h2>
-                <p className="text-gray-600">Track your travel activity and manage your bookings</p>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Total Bookings</p>
-                            <p className="text-4xl font-bold mt-2">12</p>
-                            <p className="text-blue-200 text-xs mt-1">This year</p>
-                        </div>
-                        <TicketIcon className="w-12 h-12 opacity-90" />
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-emerald-100 text-sm font-medium uppercase tracking-wide">Upcoming Flights</p>
-                            <p className="text-4xl font-bold mt-2">3</p>
-                            <p className="text-emerald-200 text-xs mt-1">Next 30 days</p>
-                        </div>
-                        <PaperAirplaneIcon className="w-12 h-12 opacity-90" />
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Miles Earned</p>
-                            <p className="text-4xl font-bold mt-2">2,450</p>
-                            <p className="text-purple-200 text-xs mt-1">Loyalty points</p>
-                        </div>
-                        <TrophyIcon className="w-12 h-12 opacity-90" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-gradient-to-br from-gray-50 to-slate-100 rounded-2xl p-6 shadow-lg border border-gray-200">
-                <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                        <ClockIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
-                </div>
-                <div className="space-y-4">
-                    <div className="flex items-center space-x-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                        <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">Flight booked to Mumbai</p>
-                            <p className="text-xs text-gray-500">2 days ago</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                        <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">Check-in completed for flight SF-202</p>
-                            <p className="text-xs text-gray-500">1 week ago</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                        <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">Loyalty points earned</p>
-                            <p className="text-xs text-gray-500">2 weeks ago</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 // My Bookings Tab
 function BookingsTab() {

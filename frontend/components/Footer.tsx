@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-10">
+    <footer className="bg-white py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         {/* Logo / Brand */}
         <div className="text-2xl font-bold">
@@ -14,17 +14,14 @@ export default function Footer() {
 
         {/* Links */}
         <div className="flex flex-wrap justify-center gap-6 text-lg">
-          <Link href="#services" className="hover:text-gray-300 transition">
-            Services
+          <Link href="/" className="hover:text-gray-700 transition">
+            Home
           </Link>
-          <Link href="#destinations" className="hover:text-gray-300 transition">
-            Destinations
+          <Link href="/about" className="hover:text-gray-700 transition">
+            About Us
           </Link>
-          <Link href="#reviews" className="hover:text-gray-300 transition">
-            Reviews
-          </Link>
-          <Link href="#contact" className="hover:text-gray-300 transition">
-            Contact
+          <Link href="#" className="hover:text-gray-700 transition">
+            Flight Status
           </Link>
         </div>
 

@@ -1,4 +1,5 @@
 import axios from "axios";
+import {jwtDecode} from 'jwt-decode';
 
 export const api = axios.create({
   baseURL: "http://localhost:3001",
@@ -13,6 +14,14 @@ api.interceptors.request.use(
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      //Remove expired token on app load
+      const decoded: any = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
+      if (decoded.exp < currentTime) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return config;
   },
