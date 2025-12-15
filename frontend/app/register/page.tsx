@@ -10,6 +10,8 @@ interface ValidationErrors {
   name?: string;
   email?: string;
   password?: string;
+  phone?: string;
+  dob?: string;
 }
 
 export default function RegisterPage() {
@@ -17,6 +19,8 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [dob, setDob] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -54,6 +58,35 @@ export default function RegisterPage() {
     return undefined;
   };
 
+  const validatePhone = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return "Phone number is required";
+    }
+    // Loose client-side check; backend enforces region format
+    const phoneRegex = /^[+0-9]{10,15}$/;
+    if (!phoneRegex.test(value.replace(/\s|-/g, ""))) {
+      return "Enter a valid phone (e.g., +919876543210)";
+    }
+    return undefined;
+  };
+
+  const validateDob = (value: string): string | undefined => {
+    if (!value) {
+      return "Date of birth is required";
+    }
+    // Basic age check: at least 12 years old
+    const dobDate = new Date(value);
+    if (isNaN(dobDate.getTime())) {
+      return "Enter a valid date";
+    }
+    const today = new Date();
+    const minDate = new Date(today.getFullYear() - 12, today.getMonth(), today.getDate());
+    if (dobDate > minDate) {
+      return "You must be at least 12 years old";
+    }
+    return undefined;
+  };
+
   // Form validation
   const validateForm = (): boolean => {
     const errors: ValidationErrors = {};
@@ -61,10 +94,14 @@ export default function RegisterPage() {
     const nameError = validateName(name);
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
+    const phoneError = validatePhone(phone);
+    const dobError = validateDob(dob);
 
     if (nameError) errors.name = nameError;
     if (emailError) errors.email = emailError;
     if (passwordError) errors.password = passwordError;
+    if (phoneError) errors.phone = phoneError;
+    if (dobError) errors.dob = dobError;
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -104,6 +141,28 @@ export default function RegisterPage() {
     }
   };
 
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    if (validationErrors.phone) {
+      const phoneError = validatePhone(value);
+      setValidationErrors(prev => ({
+        ...prev,
+        phone: phoneError
+      }));
+    }
+  };
+
+  const handleDobChange = (value: string) => {
+    setDob(value);
+    if (validationErrors.dob) {
+      const dobError = validateDob(value);
+      setValidationErrors(prev => ({
+        ...prev,
+        dob: dobError
+      }));
+    }
+  };
+
   // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +176,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const data = await registerUser(name, email, password);
+      const data = await registerUser(name, email, password, phone, dob);
 
       // Save access token
       localStorage.setItem("token", data.access_token);
@@ -246,6 +305,48 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* Phone */}
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">
+                  Phone <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="e.g., +919876543210"
+                  className={`w-full border px-4 py-2 focus:outline-none ${validationErrors.phone
+                      ? "border-red-500 focus:border-red-700"
+                      : "border-gray-300 focus:border-blue-700"
+                    }`}
+                  value={phone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  required
+                />
+                {validationErrors.phone && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.phone}</p>
+                )}
+              </div>
+
+              {/* Date of Birth */}
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">
+                  Date of Birth <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  className={`w-full border px-4 py-2 focus:outline-none ${validationErrors.dob
+                      ? "border-red-500 focus:border-red-700"
+                      : "border-gray-300 focus:border-blue-700"
+                    }`}
+                  value={dob}
+                  onChange={(e) => handleDobChange(e.target.value)}
+                  required
+                />
+                {validationErrors.dob && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.dob}</p>
+                )}
+              </div>
+
               {/* Password */}
               <div>
                 <label className="block text-sm text-gray-700 mb-1">
@@ -278,7 +379,14 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                disabled={loading || !name.trim() || !email.trim() || !password}
+                disabled={
+                  loading ||
+                  !name.trim() ||
+                  !email.trim() ||
+                  !password ||
+                  !phone.trim() ||
+                  !dob
+                }
                 className="w-full bg-blue-900 text-white py-2 font-medium hover:bg-blue-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
               >
                 {loading ? "Creating Account..." : "Create Account"}

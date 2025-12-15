@@ -6,13 +6,20 @@ import { UpdateUserDto } from './dto/update.user.dto';
 export class UsersService {
     constructor(private prisma: PrismaService) {}
 
+    async GetUser(id: number) {
+        const user = await this.prisma.user.findFirst({
+            where: { id }
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
+    }
+
     async UpdateUser(id:number, dto: UpdateUserDto){
-        console.log('UpdateUser service called with id:', id, 'dto:', dto);
         const isUserExist = await this.prisma.user.findFirst({
             where: {id}
         });
-        console.log('User exists:', !!isUserExist);
-
         if(!isUserExist)
         {
             throw new NotFoundException('User not found');
@@ -22,12 +29,10 @@ export class UsersService {
                 where: {id},
                 data: dto
             });
-            console.log('Update result:', result);
             return result;
         }
         catch(error)
         {
-            console.log('Update error:', error);
             throw error;
         }
     }

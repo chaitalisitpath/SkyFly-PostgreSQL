@@ -41,7 +41,9 @@ export class AuthService {
     data: {
       name: dto.name,
       email: dto.email,
-      password: hashedPassword, // ✅ null for Google user
+      phone: dto.phone,
+      dob: new Date(dto.dob),
+      password: hashedPassword, 
       provider,
     },
   });
@@ -95,6 +97,8 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
+      phone: user.phone,
+      dob: user.dob,
       role: user.role,
     },
   };

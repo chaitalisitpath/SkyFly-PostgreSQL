@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Logout from "@/components/Logout";
 import { getUserBookings } from "@/services/booking.service";
+import { updateUser } from "@/services/user.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import {
     ChartBarIcon,
@@ -59,7 +60,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
             {/* Header */}
-            <Navbar/>
+            <Navbar />
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Tab Navigation */}
@@ -241,6 +242,50 @@ function BookingsTab() {
 
 // Profile Tab
 function ProfileTab() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const [formData, setFormData] = useState({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        dob: user.dob || ""
+    });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        setError(null);
+        setSuccess(false);
+
+        try {
+            const updatedUser = await updateUser(user.id, formData);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            setSuccess(true);
+        } catch (err: any) {
+            console.error('Failed to update user:', err);
+            setError(err.response?.data?.message || 'Failed to update profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setFormData({
+            name: user.name || "",
+            email: user.email || "",
+            phone: user.phone || "",
+            dob: user.dob || ""
+        });
+        setError(null);
+        setSuccess(false);
+    };
+
     return (
         <div className="p-8">
             <div className="mb-8">
@@ -248,22 +293,38 @@ function ProfileTab() {
                 <p className="text-gray-600">Manage your personal information and account preferences</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Personal Information */}
-                <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-200">
-                    <div className="flex items-center space-x-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                            <UserIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
-                    </div>
+            {error && (
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center">
+                    <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mr-3" />
+                    <span className="text-red-700">{error}</span>
+                </div>
+            )}
 
-                    <div className="space-y-6">
+            {success && (
+                <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center">
+                    <TrophyIcon className="w-5 h-5 text-green-500 mr-3" />
+                    <span className="text-green-700">Profile updated successfully!</span>
+                </div>
+            )}
+
+            {/* Personal Information */}
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-200">
+                <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <UserIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
+                </div>
+
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
                             <input
                                 type="text"
-                                defaultValue="John Doe"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                             />
                         </div>
@@ -272,16 +333,21 @@ function ProfileTab() {
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                             <input
                                 type="email"
-                                defaultValue="john.doe@example.com"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                             />
                         </div>
-
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
                             <input
                                 type="tel"
-                                defaultValue="+91 9876543210"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                             />
                         </div>
@@ -290,75 +356,30 @@ function ProfileTab() {
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
                             <input
                                 type="date"
-                                defaultValue="1990-01-01"
+                                name="dob"
+                                value={formData.dob}
+                                onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                             />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Account Settings */}
-                <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-200">
-                    <div className="flex items-center space-x-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                            <CogIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900">Account Settings</h3>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Language</label>
-                            <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                <option>English</option>
-                                <option>Hindi</option>
-                                <option>Spanish</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Currency</label>
-                            <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                <option>INR (₹)</option>
-                                <option>USD ($)</option>
-                                <option>EUR (€)</option>
-                            </select>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center p-4 bg-white rounded-xl border border-gray-200">
-                                <input
-                                    type="checkbox"
-                                    id="notifications"
-                                    defaultChecked
-                                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor="notifications" className="ml-3 block text-sm font-medium text-gray-700">
-                                    Email notifications for flight updates
-                                </label>
-                            </div>
-
-                            <div className="flex items-center p-4 bg-white rounded-xl border border-gray-200">
-                                <input
-                                    type="checkbox"
-                                    id="promotions"
-                                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor="promotions" className="ml-3 block text-sm font-medium text-gray-700">
-                                    Promotional emails and offers
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="mt-8 flex justify-end space-x-4">
-                <button className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-colors duration-150">
+                <button
+                    onClick={handleCancel}
+                    className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-colors duration-150"
+                >
                     Cancel
                 </button>
-                <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
-                    Save Changes
+                <button
+                    onClick={handleSave}
+                    disabled={loading}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                    {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
+                    <span>{loading ? 'Saving...' : 'Save Changes'}</span>
                 </button>
             </div>
         </div>

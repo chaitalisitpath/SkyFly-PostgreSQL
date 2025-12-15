@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MinLength, ValidateIf, IsString, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, ValidateIf, IsString, IsOptional, IsPhoneNumber, IsDateString } from 'class-validator';
 
 export class RegisterDto {
   @IsNotEmpty()
@@ -6,6 +6,12 @@ export class RegisterDto {
 
   @IsEmail()
   email: string;
+
+ @IsPhoneNumber('IN')
+  phone: string;
+
+  @IsDateString()
+  dob: string;
 
   @ValidateIf(o => o.provider === 'local')
   @IsString()

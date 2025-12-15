@@ -31,6 +31,8 @@ export class GoogleAuthController {
           googleId: googleUser.sub,
           role: 'USER',
           password: null,
+          phone: null,
+          dob: null
         },
       });
     }
