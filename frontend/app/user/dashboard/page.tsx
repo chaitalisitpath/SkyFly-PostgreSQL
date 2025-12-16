@@ -243,11 +243,22 @@ function BookingsTab() {
 // Profile Tab
 function ProfileTab() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    // Format date to YYYY-MM-DD for date input
+    const formatDateForInput = (dateString: string) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const [formData, setFormData] = useState({
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
-        dob: user.dob || ""
+        dob: formatDateForInput(user.dob)
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -256,6 +267,7 @@ function ProfileTab() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setSuccess(false); // Clear success message when user makes changes
     };
 
     const handleSave = async () => {
@@ -264,9 +276,26 @@ function ProfileTab() {
         setSuccess(false);
 
         try {
-            const updatedUser = await updateUser(user.id, formData);
+            // Convert date format back to ISO DateTime if provided
+            const dataToSend = { ...formData };
+            if (formData.dob) {
+                dataToSend.dob = new Date(formData.dob).toISOString();
+            }
+            
+            const updatedUser = await updateUser(user.id, dataToSend);
             localStorage.setItem("user", JSON.stringify(updatedUser));
             setSuccess(true);
+            
+            // Update form data with the response
+            setFormData({
+                name: updatedUser.name || "",
+                email: updatedUser.email || "",
+                phone: updatedUser.phone || "",
+                dob: formatDateForInput(updatedUser.dob)
+            });
+            
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccess(false), 3000);
         } catch (err: any) {
             console.error('Failed to update user:', err);
             setError(err.response?.data?.message || 'Failed to update profile');
@@ -280,7 +309,7 @@ function ProfileTab() {
             name: user.name || "",
             email: user.email || "",
             phone: user.phone || "",
-            dob: user.dob || ""
+            dob: formatDateForInput(user.dob)
         });
         setError(null);
         setSuccess(false);
