@@ -59,32 +59,9 @@ export default function HeroSection() {
     if (toCity) params.append('toCity', toCity);
     if (departureDate) params.append('departureTime', departureDate);
 
-    // First call backend search endpoint to check availability
-    try {
-      const base = 'http://localhost:3001/flights/search';
-      const url = `${base}?${params.toString()}`;
-      const res = await fetch(url, { method: 'GET' });
-      const data = await res.json();
-
-      // If backend returns array of flights
-      if (Array.isArray(data) && data.length === 0) {
-        toast.error('No flights available for the searched city');
-        return;
-      }
-
-      // If backend returns object with message or empty result
-      if (!res.ok) {
-        const msg = (data && data.message) || 'No flights available for the searched city';
-        toast.error(msg);
-        return;
-      }
-
-      // Otherwise navigate to results page with the same query
-      router.push(`/flights?${params.toString()}`);
-    } catch (err) {
-      console.error(err);
-      toast.error('No flights available');
-    }
+    // TODO: Implement user search API later
+    // For now, navigate to flights page with params (will show all flights)
+    router.push(`/flights?${params.toString()}`);
   };
 
   useEffect(() => {

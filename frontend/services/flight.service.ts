@@ -92,6 +92,29 @@ export interface SearchFlightsParams {
   toCity?: string;
   departureTime?: string;
   arrivalTime?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  flightNumber?: string;
+  departureTimeFrom?: string;
+  departureTimeTo?: string;
+  arrivalTimeFrom?: string;
+  arrivalTimeTo?: string;
+  status?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  aircraftId?: number;
+}
+
+export interface SearchFlightsResponse {
+  data: Flight[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export const searchFlights = async (params: SearchFlightsParams): Promise<Flight[]> => {
@@ -102,6 +125,20 @@ export const searchFlights = async (params: SearchFlightsParams): Promise<Flight
   if (params.arrivalTime) queryParams.append('arrivalTime', params.arrivalTime);
 
   const response = await api.get(`/flights/search?${queryParams.toString()}`);
+  return response.data;
+};
+
+export const searchFlightsAdmin = async (params: SearchFlightsParams): Promise<SearchFlightsResponse> => {
+  const queryParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      queryParams.append(key, value.toString());
+    }
+  });
+
+  console.log('Frontend searchFlightsAdmin called with params:', Object.fromEntries(queryParams));
+  const response = await api.get(`/flights/search?${queryParams.toString()}`);
+  console.log('Frontend searchFlightsAdmin response:', response.data);
   return response.data;
 };
 

@@ -23,19 +23,10 @@ export default function Flights() {
 
         const hasSearchParams = fromCity || toCity || departureTime || arrivalTime;
 
-        if (hasSearchParams) {
-          const searchCriteria: SearchFlightsParams = {
-            fromCity: fromCity || undefined,
-            toCity: toCity || undefined,
-            departureTime: departureTime || undefined,
-            arrivalTime: arrivalTime || undefined,
-          };
-          const results = await searchFlights(searchCriteria);
-          setFlights(results);
-        } else {
-          const results = await getFlights();
-          setFlights(results);
-        }
+        // TODO: Implement user search API later
+        // For now, always show all flights
+        const results = await getFlights();
+        setFlights(results);
       } catch (err) {
         console.error("Failed to fetch flights:", err);
       } finally {

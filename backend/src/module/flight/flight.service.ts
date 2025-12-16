@@ -254,10 +254,20 @@ export class FlightService {
     return await this.prisma.flight.delete({ where: { id } });
   }
 
-  //Search flight using from and to city with date
+  //Search flight with advanced filters, pagination, and sorting
   async searchFlights(searchDto: any) {
+    console.log('SearchFlights called with params:', JSON.stringify(searchDto, null, 2));
     const where: any = {};
 
+    // Flight number filter
+    if (searchDto.flightNumber) {
+      where.flightNumber = {
+        contains: searchDto.flightNumber,
+        mode: 'insensitive',
+      };
+    }
+
+    // City filters
     if (searchDto.fromCity) {
       where.fromCity = {
         contains: searchDto.fromCity,
@@ -272,49 +282,86 @@ export class FlightService {
       };
     }
 
-    if (searchDto.departureTime) {
-      // Validate and parse date
-      const departureDate = new Date(searchDto.departureTime);
-      if (isNaN(departureDate.getTime())) {
-        throw new BadRequestException('Invalid departure date format');
+    // Departure time range
+    if (searchDto.departureTimeFrom || searchDto.departureTimeTo) {
+      where.departureTime = {};
+      if (searchDto.departureTimeFrom) {
+        const departureFrom = new Date(searchDto.departureTimeFrom);
+        if (isNaN(departureFrom.getTime())) {
+          throw new BadRequestException('Invalid departureTimeFrom format');
+        }
+        where.departureTime.gte = departureFrom;
       }
-
-      // If it's a date-only string, set to start of day
-      let filterDate: Date;
-      if (searchDto.departureTime.includes('T')) {
-        filterDate = departureDate;
-      } else {
-        // Date-only format, assume start of day
-        filterDate = new Date(`${searchDto.departureTime}T00:00:00.000Z`);
+      if (searchDto.departureTimeTo) {
+        const departureTo = new Date(searchDto.departureTimeTo);
+        if (isNaN(departureTo.getTime())) {
+          throw new BadRequestException('Invalid departureTimeTo format');
+        }
+        where.departureTime.lte = departureTo;
       }
-
-      where.departureTime = {
-        gte: filterDate,
-      };
     }
 
-    if (searchDto.arrivalTime) {
-      // Validate and parse date
-      const arrivalDate = new Date(searchDto.arrivalTime);
-      if (isNaN(arrivalDate.getTime())) {
-        throw new BadRequestException('Invalid arrival date format');
+    // Arrival time range
+    if (searchDto.arrivalTimeFrom || searchDto.arrivalTimeTo) {
+      where.arrivalTime = {};
+      if (searchDto.arrivalTimeFrom) {
+        const arrivalFrom = new Date(searchDto.arrivalTimeFrom);
+        if (isNaN(arrivalFrom.getTime())) {
+          throw new BadRequestException('Invalid arrivalTimeFrom format');
+        }
+        where.arrivalTime.gte = arrivalFrom;
       }
-
-      // If it's a date-only string, set to end of day
-      let filterDate: Date;
-      if (searchDto.arrivalTime.includes('T')) {
-        filterDate = arrivalDate;
-      } else {
-        // Date-only format, assume end of day
-        filterDate = new Date(`${searchDto.arrivalTime}T23:59:59.999Z`);
+      if (searchDto.arrivalTimeTo) {
+        const arrivalTo = new Date(searchDto.arrivalTimeTo);
+        if (isNaN(arrivalTo.getTime())) {
+          throw new BadRequestException('Invalid arrivalTimeTo format');
+        }
+        where.arrivalTime.lte = arrivalTo;
       }
-
-      where.arrivalTime = {
-        lte: filterDate,
-      };
     }
 
-    return this.prisma.flight.findMany({
+    // Status filter
+    if (searchDto.status) {
+      where.status = searchDto.status;
+    }
+
+    // Price range filter (check any price class)
+    if (searchDto.minPrice !== undefined || searchDto.maxPrice !== undefined) {
+      where.OR = [
+        ...(searchDto.minPrice !== undefined ? [
+          { economyPrice: { gte: searchDto.minPrice } },
+          { businessPrice: { gte: searchDto.minPrice } },
+          { firstPrice: { gte: searchDto.minPrice } }
+        ] : []),
+        ...(searchDto.maxPrice !== undefined ? [
+          { economyPrice: { lte: searchDto.maxPrice } },
+          { businessPrice: { lte: searchDto.maxPrice } },
+          { firstPrice: { lte: searchDto.maxPrice } }
+        ] : [])
+      ];
+    }
+
+    // Aircraft filter
+    if (searchDto.aircraftId) {
+      where.aircraftId = searchDto.aircraftId;
+    }
+
+    // Pagination
+    const page = searchDto.page || 1;
+    const limit = searchDto.limit || 5;
+    const skip = (page - 1) * limit;
+
+    // Sorting
+    const sortBy = searchDto.sortBy || 'departureTime';
+    const sortOrder = searchDto.sortOrder || 'asc';
+    const orderBy: any = {};
+    orderBy[sortBy] = sortOrder;
+
+    // Get total count for pagination metadata
+    const total = await this.prisma.flight.count({ where });
+
+    // Get flights
+    const flights = await this.prisma.flight.findMany({
       where,
       include: {
         aircraft: {
@@ -333,8 +380,22 @@ export class FlightService {
           }
         }
       },
-      orderBy: { departureTime: 'asc' }
+      orderBy,
+      skip,
+      take: limit
     });
+
+    const result = {
+      data: flights,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+    console.log('SearchFlights returning:', { dataCount: flights.length, pagination: result.pagination });
+    return result;
   }
 
   // Get available seats for a flight by class

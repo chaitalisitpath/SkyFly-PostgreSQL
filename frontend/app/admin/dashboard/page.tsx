@@ -7,7 +7,20 @@ import AddFlightModal from "@/components/AddFlightModal";
 import EditFlightModal from "@/components/EditFlightModal";
 import AddAircraftModal from "@/components/AddAircraftModal";
 import EditAircraftModal from "@/components/EditAircraftModal";
-import { getFlights, deleteFlight, Flight } from "@/services/flight.service";
+import { getFlights, deleteFlight, Flight, searchFlightsAdmin, SearchFlightsParams, SearchFlightsResponse } from "@/services/flight.service";
+
+const availableCities = [
+  "Delhi",
+  "Mumbai",
+  "Bangalore",
+  "Chennai",
+  "Kolkata",
+  "Hyderabad",
+  "Pune",
+  "Ahmedabad",
+  "Jaipur",
+  "Lucknow"
+];
 import { getAircraft, deleteAircraft, Aircraft } from "@/services/aircraft.service";
 import { getAllBookings, updateBookingStatus, Booking } from "@/services/booking.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
@@ -289,11 +302,24 @@ function FlightsManagementTab() {
     const [flights, setFlights] = useState<Flight[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
+    const [searchParams, setSearchParams] = useState<SearchFlightsParams>({});
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
+    const [isSearchMode, setIsSearchMode] = useState(false);
 
     const fetchFlights = async () => {
         try {
-            const data = await getFlights();
-            setFlights(data);
+            if (isSearchMode) {
+                const params = { ...searchParams, page: pagination.page, limit: pagination.limit };
+                const response: SearchFlightsResponse = await searchFlightsAdmin(params);
+                setFlights(response.data);
+                setPagination(response.pagination);
+            } else {
+                // For non-search mode, use search API with empty params to get paginated results
+                const params = { page: pagination.page, limit: pagination.limit };
+                const response: SearchFlightsResponse = await searchFlightsAdmin(params);
+                setFlights(response.data);
+                setPagination(response.pagination);
+            }
         } catch (error) {
             console.error("Error fetching flights:", error);
         } finally {
@@ -303,7 +329,7 @@ function FlightsManagementTab() {
 
     useEffect(() => {
         fetchFlights();
-    }, []);
+    }, [isSearchMode, searchParams, pagination.page, pagination.limit]);
 
     const handleAddFlightSuccess = () => {
         alert("Flight added successfully!");
@@ -326,6 +352,22 @@ function FlightsManagementTab() {
                 alert("Error deleting flight");
             }
         }
+    };
+
+    const handleSearch = (params: SearchFlightsParams) => {
+        setSearchParams(params);
+        setPagination(prev => ({ ...prev, page: 1 }));
+        setIsSearchMode(true);
+    };
+
+    const handleClearSearch = () => {
+        setSearchParams({});
+        setPagination({ page: 1, limit: 10, total: 0, totalPages: 0 });
+        setIsSearchMode(false);
+    };
+
+    const handlePageChange = (page: number) => {
+        setPagination(prev => ({ ...prev, page }));
     };
 
     const formatDateTime = (dateString: string) => {
@@ -380,8 +422,107 @@ function FlightsManagementTab() {
                     </button>
                 </div>
             ) : (
-                <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
-                    <div className="overflow-auto max-h-110">
+                <div className="space-y-6">
+                    {/* Search Filters */}
+                    <div className="bg-white shadow-xl rounded-2xl p-6 border border-slate-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-slate-900">Search & Filter Flights</h3>
+                            {isSearchMode && (
+                                <button
+                                    onClick={handleClearSearch}
+                                    className="text-sm text-blue-600 hover:text-blue-800"
+                                >
+                                    Clear Search
+                                </button>
+                            )}
+                        </div>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const params: SearchFlightsParams = {
+                                flightNumber: formData.get('flightNumber') as string || undefined,
+                                fromCity: formData.get('fromCity') as string || undefined,
+                                toCity: formData.get('toCity') as string || undefined,
+                                departureTimeFrom: formData.get('departureTimeFrom') as string || undefined,
+                                departureTimeTo: formData.get('departureTimeTo') as string || undefined,
+                                status: formData.get('status') as string || undefined,
+                                minPrice: formData.get('minPrice') ? Number(formData.get('minPrice')) : undefined,
+                                maxPrice: formData.get('maxPrice') ? Number(formData.get('maxPrice')) : undefined,
+                            };
+                            handleSearch(params);
+                        }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <input
+                                name="flightNumber"
+                                placeholder="Flight Number"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                            <select
+                                name="fromCity"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            >
+                                <option value="">All From Cities</option>
+                                {availableCities.map((city) => (
+                                    <option key={city} value={city}>
+                                        {city}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                name="toCity"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            >
+                                <option value="">All To Cities</option>
+                                {availableCities.map((city) => (
+                                    <option key={city} value={city}>
+                                        {city}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                name="status"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            >
+                                <option value="">All Status</option>
+                                <option value="ON_TIME">On Time</option>
+                                <option value="DELAYED">Delayed</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                            <input
+                                name="departureTimeFrom"
+                                type="datetime-local"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                            <input
+                                name="departureTimeTo"
+                                type="datetime-local"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                            <input
+                                name="minPrice"
+                                type="number"
+                                placeholder="Min Price"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                            <input
+                                name="maxPrice"
+                                type="number"
+                                placeholder="Max Price"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                            <div className="md:col-span-2 lg:col-span-4 flex justify-end">
+                                <button
+                                    type="submit"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium"
+                                >
+                                    Search Flights
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Flights Table */}
+                    <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                        <div className="overflow-auto max-h-110">
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
                                 <tr>
@@ -485,6 +626,35 @@ function FlightsManagementTab() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                    <div className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-lg border border-slate-200">
+                        <div className="text-sm text-slate-600">
+                            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} flights
+                        </div>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => handlePageChange(pagination.page - 1)}
+                                disabled={pagination.page <= 1}
+                                className="px-3 py-1 text-sm border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="px-3 py-1 text-sm text-slate-700">
+                                Page {pagination.page} of {pagination.totalPages}
+                            </span>
+                            <button
+                                onClick={() => handlePageChange(pagination.page + 1)}
+                                disabled={pagination.page >= pagination.totalPages}
+                                className="px-3 py-1 text-sm border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
                 </div>
             )}
 

@@ -1,7 +1,13 @@
-import { IsOptional, IsString, IsISO8601 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { FlightStatus } from '@prisma/client';
 
 export class SearchFlightDto {
+  // Filters
+  @IsOptional()
+  @IsString()
+  flightNumber?: string;
+
   @IsOptional()
   @IsString()
   fromCity?: string;
@@ -10,8 +16,64 @@ export class SearchFlightDto {
   @IsString()
   toCity?: string;
 
-  // Accept date strings like "2025-12-03"
   @IsOptional()
   @IsString()
-  departureTime?: string;
+  departureTimeFrom?: string;
+
+  @IsOptional()
+  @IsString()
+  departureTimeTo?: string;
+
+  @IsOptional()
+  @IsString()
+  arrivalTimeFrom?: string;
+
+  @IsOptional()
+  @IsString()
+  arrivalTimeTo?: string;
+
+  @IsOptional()
+  @IsEnum(FlightStatus)
+  status?: FlightStatus;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  aircraftId?: number;
+
+  // Pagination
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  limit?: number = 20;
+
+  // Sorting
+  @IsOptional()
+  @IsString()
+  sortBy?: string = 'departureTime';
+
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc' = 'asc';
 }
