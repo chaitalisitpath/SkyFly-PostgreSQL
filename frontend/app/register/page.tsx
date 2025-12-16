@@ -59,30 +59,24 @@ export default function RegisterPage() {
   };
 
   const validatePhone = (value: string): string | undefined => {
-    if (!value.trim()) {
-      return "Phone number is required";
-    }
-    // Loose client-side check; backend enforces region format
-    const phoneRegex = /^[+0-9]{10,15}$/;
-    if (!phoneRegex.test(value.replace(/\s|-/g, ""))) {
+    if (value.trim() && !/^[+0-9]{10,15}$/.test(value.replace(/\s|-/g, ""))) {
       return "Enter a valid phone (e.g., +919876543210)";
     }
     return undefined;
   };
 
   const validateDob = (value: string): string | undefined => {
-    if (!value) {
-      return "Date of birth is required";
-    }
-    // Basic age check: at least 12 years old
-    const dobDate = new Date(value);
-    if (isNaN(dobDate.getTime())) {
-      return "Enter a valid date";
-    }
-    const today = new Date();
-    const minDate = new Date(today.getFullYear() - 12, today.getMonth(), today.getDate());
-    if (dobDate > minDate) {
-      return "You must be at least 12 years old";
+    if (value) {
+      // Basic age check: at least 12 years old
+      const dobDate = new Date(value);
+      if (isNaN(dobDate.getTime())) {
+        return "Enter a valid date";
+      }
+      const today = new Date();
+      const minDate = new Date(today.getFullYear() - 12, today.getMonth(), today.getDate());
+      if (dobDate > minDate) {
+        return "You must be at least 12 years old";
+      }
     }
     return undefined;
   };
@@ -176,15 +170,9 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const data = await registerUser(name, email, password, phone, dob);
+      await registerUser(name, email, password, phone, dob);
 
-      // Save access token
-      localStorage.setItem("token", data.access_token);
-
-      // Save user info (optional)
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Redirect to dashboard
+      // Redirect to login
       router.push("/login");
     } catch (err: any) {
       console.error(err);
@@ -308,7 +296,7 @@ export default function RegisterPage() {
               {/* Phone */}
               <div>
                 <label className="block text-sm text-gray-700 mb-1">
-                  Phone <span className="text-red-500">*</span>
+                  Phone
                 </label>
                 <input
                   type="tel"
@@ -320,7 +308,6 @@ export default function RegisterPage() {
                     }`}
                   value={phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  required
                 />
                 {validationErrors.phone && (
                   <p className="text-red-500 text-sm mt-1">{validationErrors.phone}</p>
@@ -330,7 +317,7 @@ export default function RegisterPage() {
               {/* Date of Birth */}
               <div>
                 <label className="block text-sm text-gray-700 mb-1">
-                  Date of Birth <span className="text-red-500">*</span>
+                  Date of Birth
                 </label>
                 <input
                   type="date"
@@ -340,7 +327,6 @@ export default function RegisterPage() {
                     }`}
                   value={dob}
                   onChange={(e) => handleDobChange(e.target.value)}
-                  required
                 />
                 {validationErrors.dob && (
                   <p className="text-red-500 text-sm mt-1">{validationErrors.dob}</p>
@@ -383,9 +369,7 @@ export default function RegisterPage() {
                   loading ||
                   !name.trim() ||
                   !email.trim() ||
-                  !password ||
-                  !phone.trim() ||
-                  !dob
+                  !password
                 }
                 className="w-full bg-blue-900 text-white py-2 font-medium hover:bg-blue-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
               >

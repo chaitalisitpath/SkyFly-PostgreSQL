@@ -42,8 +42,8 @@ export class AuthService {
       name: dto.name,
       email: dto.email,
       phone: dto.phone,
-      dob: new Date(dto.dob),
-      password: hashedPassword, 
+      dob: dto.dob ? new Date(dto.dob) : null,
+      password: hashedPassword,
       provider,
     },
   });
