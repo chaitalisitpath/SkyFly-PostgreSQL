@@ -1,6 +1,6 @@
-import { IsOptional, IsString, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEnum, Min, Max, IsArray } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { FlightStatus } from '@prisma/client';
+import { FlightStatus, SeatClass } from '@prisma/client';
 
 export class SearchFlightDto {
   // Filters
@@ -40,12 +40,6 @@ export class SearchFlightDto {
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  minPrice?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
   maxPrice?: number;
 
   @IsOptional()
@@ -53,6 +47,13 @@ export class SearchFlightDto {
   @IsNumber()
   @Min(1)
   aircraftId?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(SeatClass, { each: true })
+  @Type(() => String)
+  @Transform(({ value }) => Array.isArray(value) ? value : [value].filter(Boolean))
+  classes?: SeatClass[];
 
   // Pagination
   @IsOptional()

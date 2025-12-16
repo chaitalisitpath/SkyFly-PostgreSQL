@@ -259,6 +259,8 @@ export class FlightService {
     console.log('SearchFlights called with params:', JSON.stringify(searchDto, null, 2));
     const where: any = {};
 
+    console.log('Building where clause...');
+
     // Flight number filter
     if (searchDto.flightNumber) {
       where.flightNumber = {
@@ -320,30 +322,46 @@ export class FlightService {
       }
     }
 
-    // Status filter
+    // Status filter - default to ON_TIME for user search if not specified
     if (searchDto.status) {
       where.status = searchDto.status;
+    } else {
+      // For user search, only show active flights
+      where.status = 'ON_TIME';
     }
 
-    // Price range filter (check any price class)
-    if (searchDto.minPrice !== undefined || searchDto.maxPrice !== undefined) {
-      where.OR = [
-        ...(searchDto.minPrice !== undefined ? [
-          { economyPrice: { gte: searchDto.minPrice } },
-          { businessPrice: { gte: searchDto.minPrice } },
-          { firstPrice: { gte: searchDto.minPrice } }
-        ] : []),
-        ...(searchDto.maxPrice !== undefined ? [
-          { economyPrice: { lte: searchDto.maxPrice } },
-          { businessPrice: { lte: searchDto.maxPrice } },
-          { firstPrice: { lte: searchDto.maxPrice } }
-        ] : [])
+    // Price filter (max price)
+    if (searchDto.maxPrice !== undefined) {
+      const priceConditions = [
+        { economyPrice: { lte: searchDto.maxPrice } },
+        { businessPrice: { lte: searchDto.maxPrice } },
+        { firstPrice: { lte: searchDto.maxPrice } }
       ];
+      where.AND = where.AND || [];
+      where.AND.push({ OR: priceConditions });
     }
 
     // Aircraft filter
     if (searchDto.aircraftId) {
       where.aircraftId = searchDto.aircraftId;
+    }
+
+    // Class filter: show flights that offer at least one of the selected classes
+    if (searchDto.classes && searchDto.classes.length > 0) {
+      const classConditions: any[] = [];
+      if (searchDto.classes.includes('ECONOMY')) {
+        classConditions.push({ economyPrice: { not: null } });
+      }
+      if (searchDto.classes.includes('BUSINESS')) {
+        classConditions.push({ businessPrice: { not: null } });
+      }
+      if (searchDto.classes.includes('FIRST')) {
+        classConditions.push({ firstPrice: { not: null } });
+      }
+      if (classConditions.length > 0) {
+        where.AND = where.AND || [];
+        where.AND.push({ OR: classConditions });
+      }
     }
 
     // Pagination
@@ -359,6 +377,8 @@ export class FlightService {
 
     // Get total count for pagination metadata
     const total = await this.prisma.flight.count({ where });
+    console.log('Where clause:', JSON.stringify(where, null, 2));
+    console.log('Total count:', total);
 
     // Get flights
     const flights = await this.prisma.flight.findMany({

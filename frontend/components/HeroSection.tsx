@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import { searchFlightsAdmin, SearchFlightsParams } from "@/services/flight.service";
 
 const popularCities = [
   "Delhi",
@@ -53,15 +54,37 @@ export default function HeroSection() {
     const toCity = formData.get('toCity') as string;
     const departureDate = formData.get('departureDate') as string;
 
-    // Build query params
-    const params = new URLSearchParams();
-    if (fromCity) params.append('fromCity', fromCity);
-    if (toCity) params.append('toCity', toCity);
-    if (departureDate) params.append('departureTime', departureDate);
+    // Build search params
+    const searchParamsObj: SearchFlightsParams = {
+      fromCity: fromCity || undefined,
+      toCity: toCity || undefined,
+      departureTimeFrom: departureDate ? new Date(departureDate).toISOString() : undefined,
+      departureTimeTo: departureDate ? new Date(new Date(departureDate).getTime() + 24 * 60 * 60 * 1000).toISOString() : undefined,
+      page: 1,
+      limit: 20,
+      sortBy: 'departureTime',
+      sortOrder: 'asc',
+    };
 
-    // TODO: Implement user search API later
-    // For now, navigate to flights page with params (will show all flights)
-    router.push(`/flights?${params.toString()}`);
+    try {
+      const result = await searchFlightsAdmin(searchParamsObj);
+      if (result.data.length === 0) {
+        toast.error("No available flights for these cities");
+        return;
+      }
+
+      // Build query params for navigation
+      const params = new URLSearchParams();
+      if (fromCity) params.append('fromCity', fromCity);
+      if (toCity) params.append('toCity', toCity);
+      if (departureDate) params.append('departureTime', departureDate);
+
+      // Navigate to search page with params
+      router.push(`/search?${params.toString()}`);
+    } catch (err) {
+      console.error("Failed to search flights:", err);
+      toast.error("Failed to search flights");
+    }
   };
 
   useEffect(() => {
@@ -212,6 +235,7 @@ export default function HeroSection() {
                     name="departureDate"
                     min={new Date().toISOString().split('T')[0]}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 cursor-pointer"
+                    required
                   />
                 </div>
               </div>

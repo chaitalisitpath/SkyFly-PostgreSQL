@@ -25,6 +25,7 @@ export const getCurrentUserRole = (): 'ADMIN' | 'USER' | null => {
 };
 
 export const isAuthenticated = (): boolean => {
+  if (typeof window === 'undefined') return false;
   return !!localStorage.getItem('token');
 };
 
