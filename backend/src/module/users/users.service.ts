@@ -29,6 +29,16 @@ export class UsersService {
                 where: {id},
                 data: dto
             });
+
+            // Check if profile is complete
+            if (result.phone && result.dob) {
+                await this.prisma.user.update({
+                    where: {id},
+                    data: { isProfileComplete: true }
+                });
+                result.isProfileComplete = true;
+            }
+
             return result;
         }
         catch(error)

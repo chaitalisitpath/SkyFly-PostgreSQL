@@ -53,6 +53,7 @@ export class GoogleAuthController {
         email: user.email,
         name: user.name,
         role: user.role,
+        isProfileComplete: user.isProfileComplete,
       },
     };
   }

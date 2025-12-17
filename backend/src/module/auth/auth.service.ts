@@ -45,6 +45,7 @@ export class AuthService {
       dob: dto.dob ? new Date(dto.dob) : null,
       password: hashedPassword,
       provider,
+      isProfileComplete: dto.phone && dto.dob ? true : false,
     },
   });
 
@@ -100,6 +101,7 @@ export class AuthService {
       phone: user.phone,
       dob: user.dob,
       role: user.role,
+      isProfileComplete: user.isProfileComplete,
     },
   };
 }

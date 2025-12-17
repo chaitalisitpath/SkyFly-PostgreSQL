@@ -21,6 +21,7 @@ import {
 import Navbar from "@/components/Navbar";
 
 type TabType = 'bookings' | 'profile';
+type BookingTabType = 'upcoming' | 'archive';
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -98,7 +99,12 @@ function BookingsTab() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [bookingTab, setBookingTab] = useState<BookingTabType>('upcoming');
     const router = useRouter();
+
+    // Separate bookings into upcoming and archived
+    const upcomingBookings = bookings.filter(booking => new Date(booking.flight.departureTime) >= new Date());
+    const archivedBookings = bookings.filter(booking => new Date(booking.flight.departureTime) < new Date());
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -150,6 +156,22 @@ function BookingsTab() {
                     <h2 className="text-3xl font-bold text-gray-900">My Bookings</h2>
                     <p className="text-gray-600 mt-1">Manage your flight reservations and travel plans</p>
                 </div>
+                {bookings.length > 0 && (
+                    <div className="flex space-x-2 bg-slate-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setBookingTab('upcoming')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${bookingTab === 'upcoming' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'}`}
+                        >
+                            Upcoming ({upcomingBookings.length})
+                        </button>
+                        <button
+                            onClick={() => setBookingTab('archive')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${bookingTab === 'archive' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'}`}
+                        >
+                            Archive ({archivedBookings.length})
+                        </button>
+                    </div>
+                )}
                 <button
                     onClick={() => router.push('/')}
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2"
@@ -160,7 +182,7 @@ function BookingsTab() {
             </div>
 
             <div className="space-y-6">
-                {bookings.map((booking) => (
+                {(bookingTab === 'upcoming' ? upcomingBookings : archivedBookings).map((booking) => (
                     <div key={booking.id} className="bg-gradient-to-r from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                         <div className="flex justify-between items-start">
                             <div className="flex-1">
@@ -220,19 +242,19 @@ function BookingsTab() {
                 ))}
             </div>
 
-            {bookings.length === 0 && (
+            {(bookingTab === 'upcoming' ? upcomingBookings : archivedBookings).length === 0 && (
                 <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-12 text-center border border-slate-200">
                     <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <TicketIcon className="w-12 h-12 text-blue-600" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">No Bookings Yet</h3>
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">Start your journey by booking your first flight. Discover amazing destinations and create unforgettable memories.</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">{bookingTab === 'upcoming' ? 'No Upcoming Bookings' : 'No Archived Bookings'}</h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">{bookingTab === 'upcoming' ? 'Start your journey by booking your first flight. Discover amazing destinations and create unforgettable memories.' : 'Your completed flights will appear here.'}</p>
                     <button
-                        onClick={() => router.push('/')}
+                        onClick={() => bookingTab === 'upcoming' ? router.push('/') : setBookingTab('upcoming')}
                         className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto"
                     >
                         <PaperAirplaneIcon className="w-5 h-5" />
-                        <span>Browse Flights</span>
+                        <span>{bookingTab === 'upcoming' ? 'Browse Flights' : 'View Upcoming Bookings'}</span>
                     </button>
                 </div>
             )}
@@ -243,7 +265,7 @@ function BookingsTab() {
 // Profile Tab
 function ProfileTab() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    
+
     // Format date to YYYY-MM-DD for date input
     const formatDateForInput = (dateString: string) => {
         if (!dateString) return "";
@@ -321,6 +343,13 @@ function ProfileTab() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h2>
                 <p className="text-gray-600">Manage your personal information and account preferences</p>
             </div>
+
+            {!user.isProfileComplete && (
+                <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center">
+                    <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 mr-3" />
+                    <span className="text-yellow-700">Please complete your profile by entering your phone number and date of birth.</span>
+                </div>
+            )}
 
             {error && (
                 <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center">
