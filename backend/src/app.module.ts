@@ -7,9 +7,10 @@ import { BookingModule } from './module/booking/booking.module';
 import { GoogleAuthService } from './module/auth/google/google.service';
 import { MailModule } from './module/mail/mail.module';
 import { UsersModule } from './module/users/users.module';
+import { StatsModule } from './module/stats/stats.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule],
+  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule],
   controllers: [],
   providers: [GoogleAuthService],
 })

@@ -8,6 +8,7 @@ import EditFlightModal from "@/components/EditFlightModal";
 import AddAircraftModal from "@/components/AddAircraftModal";
 import EditAircraftModal from "@/components/EditAircraftModal";
 import { getFlights, deleteFlight, Flight, searchFlightsAdmin, SearchFlightsParams, SearchFlightsResponse } from "@/services/flight.service";
+import { getStats, Stats } from "@/services/stats.service";
 
 const availableCities = [
   "Delhi",
@@ -149,6 +150,24 @@ export default function AdminDashboardPage() {
 
 // Admin Overview Tab
 function AdminOverviewTab() {
+    const [stats, setStats] = useState<Stats | null>(null);
+    const [statsLoading, setStatsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const data = await getStats();
+                setStats(data);
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            } finally {
+                setStatsLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
     return (
         <div className="p-8">
             <div className="mb-8">
@@ -162,7 +181,9 @@ function AdminOverviewTab() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Total Flights</p>
-                            <p className="text-4xl font-bold mt-2">24</p>
+                            <p className="text-4xl font-bold mt-2">
+                                {statsLoading ? "..." : (stats?.totalFlights ?? 0)}
+                            </p>
                             <p className="text-blue-200 text-xs mt-1">Active routes</p>
                         </div>
                         <PaperAirplaneIcon className="w-12 h-12 opacity-80" />
@@ -173,7 +194,9 @@ function AdminOverviewTab() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-emerald-100 text-sm font-medium uppercase tracking-wide">Total Users</p>
-                            <p className="text-4xl font-bold mt-2">1,247</p>
+                            <p className="text-4xl font-bold mt-2">
+                                {statsLoading ? "..." : (stats?.totalUsers ?? 0)}
+                            </p>
                             <p className="text-emerald-200 text-xs mt-1">Registered accounts</p>
                         </div>
                         <UsersIcon className="w-12 h-12 opacity-80" />
@@ -184,7 +207,9 @@ function AdminOverviewTab() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-amber-100 text-sm font-medium uppercase tracking-wide">Total Bookings</p>
-                            <p className="text-4xl font-bold mt-2">3,492</p>
+                            <p className="text-4xl font-bold mt-2">
+                                {statsLoading ? "..." : (stats?.totalBookings ?? 0)}
+                            </p>
                             <p className="text-amber-200 text-xs mt-1">This month</p>
                         </div>
                         <TicketIcon className="w-12 h-12 opacity-80" />
@@ -194,11 +219,13 @@ function AdminOverviewTab() {
                 <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Revenue</p>
-                            <p className="text-4xl font-bold mt-2">₹2.4M</p>
-                            <p className="text-purple-200 text-xs mt-1">Monthly earnings</p>
+                            <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Total Aircrafts</p>
+                            <p className="text-4xl font-bold mt-2">
+                                {statsLoading ? "..." : (stats?.totalAircrafts ?? 0)}
+                            </p>
+                            <p className="text-purple-200 text-xs mt-1">Fleet size</p>
                         </div>
-                        <CurrencyRupeeIcon className="w-12 h-12 opacity-80" />
+                        <RocketLaunchIcon className="w-12 h-12 opacity-80" />
                     </div>
                 </div>
             </div>
