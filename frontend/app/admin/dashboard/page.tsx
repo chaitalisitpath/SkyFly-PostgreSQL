@@ -473,8 +473,6 @@ function FlightsManagementTab() {
                                 departureTimeFrom: formData.get('departureTimeFrom') as string || undefined,
                                 departureTimeTo: formData.get('departureTimeTo') as string || undefined,
                                 status: formData.get('status') as string || undefined,
-                                minPrice: formData.get('minPrice') ? Number(formData.get('minPrice')) : undefined,
-                                maxPrice: formData.get('maxPrice') ? Number(formData.get('maxPrice')) : undefined,
                             };
                             handleSearch(params);
                         }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -522,18 +520,6 @@ function FlightsManagementTab() {
                             <input
                                 name="departureTimeTo"
                                 type="datetime-local"
-                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                            />
-                            <input
-                                name="minPrice"
-                                type="number"
-                                placeholder="Min Price"
-                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                            />
-                            <input
-                                name="maxPrice"
-                                type="number"
-                                placeholder="Max Price"
                                 className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
                             />
                             <div className="md:col-span-2 lg:col-span-4 flex justify-end">

@@ -32,6 +32,13 @@ export interface Booking {
     departureTime: string;
     arrivalTime: string;
     price: number;
+    aircraft?: {
+      id: number;
+      model: string;
+    };
+    economyPrice?: number;
+    businessPrice?: number;
+    firstPrice?: number;
   };
   passengers: Passenger[];
   user: {

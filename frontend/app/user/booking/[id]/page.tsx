@@ -100,6 +100,15 @@ export default function BookingDetailsPage() {
         });
     };
 
+    const getDuration = (departure: string, arrival: string) => {
+        const dep = new Date(departure);
+        const arr = new Date(arrival);
+        const diff = arr.getTime() - dep.getTime();
+        const hours = Math.floor(diff / 1000 / 60 / 60);
+        const minutes = Math.floor((diff / 1000 / 60) % 60);
+        return `${hours}h ${minutes}m`;
+    };
+
     const handleCancelBooking = async () => {
         if (!booking) return;
 
@@ -236,19 +245,15 @@ export default function BookingDetailsPage() {
                                         <div className="space-y-3">
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Aircraft:</span>
-                                                <span className="font-medium">Boeing 737-800</span>
+                                                <span className="font-medium">{booking.flight.aircraft?.model || 'Aircraft TBD'}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Class:</span>
-                                                <span className="font-medium">Economy</span>
+                                                <span className="font-medium">{booking.passengers[0]?.seatClass || 'Economy'}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Duration:</span>
-                                                <span className="font-medium">2h 30m</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Price per seat:</span>
-                                                <span className="font-medium">₹{(booking.flight.price || 0).toLocaleString()}</span>
+                                                <span className="font-medium">{getDuration(booking.flight.departureTime, booking.flight.arrivalTime)}</span>
                                             </div>
                                         </div>
                                     </div>

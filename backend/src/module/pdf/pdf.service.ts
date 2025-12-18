@@ -115,6 +115,7 @@ export class PdfService {
       doc.moveDown(1);
 
       // Footer
+      doc.moveDown(12);
       doc.fontSize(10).font('Helvetica');
       doc.text('Thank you for choosing SkyFly Airlines!', { align: 'center' });
       doc.text('For any queries, please contact our customer support.', { align: 'center' });
