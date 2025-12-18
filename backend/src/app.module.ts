@@ -8,9 +8,11 @@ import { GoogleAuthService } from './module/auth/google/google.service';
 import { MailModule } from './module/mail/mail.module';
 import { UsersModule } from './module/users/users.module';
 import { StatsModule } from './module/stats/stats.module';
+import { PdfController } from './module/pdf/pdf.controller';
+import { PdfModule } from './module/pdf/pdf.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule],
+  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule, PdfModule],
   controllers: [],
   providers: [GoogleAuthService],
 })

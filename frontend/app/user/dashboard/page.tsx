@@ -27,17 +27,22 @@ export default function DashboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('bookings');
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const [user, setUser] = useState<any>({});
 
     // Role-based access control - only USER can access this page
     useRoleAccess('USER');
 
     useEffect(() => {
-        // Check if user is logged in
+        // Check if user is logged in and load user data
         const token = localStorage.getItem("token");
+        const userData = localStorage.getItem("user");
+
         if (!token) {
             router.push("/login");
         } else {
+            if (userData) {
+                setUser(JSON.parse(userData));
+            }
             setLoading(false);
         }
     }, [router]);
@@ -86,7 +91,7 @@ export default function DashboardPage() {
                 {/* Tab Content */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
                     {activeTab === 'bookings' && <BookingsTab />}
-                    {activeTab === 'profile' && <ProfileTab />}
+                    {activeTab === 'profile' && <ProfileTab user={user} />}
                 </div>
             </div>
         </div>
@@ -263,8 +268,7 @@ function BookingsTab() {
 }
 
 // Profile Tab
-function ProfileTab() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+function ProfileTab({ user }: { user: any }) {
 
     // Format date to YYYY-MM-DD for date input
     const formatDateForInput = (dateString: string) => {

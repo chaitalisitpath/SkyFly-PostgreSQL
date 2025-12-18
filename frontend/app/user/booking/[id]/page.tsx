@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getBookingById, Booking, deleteBooking } from "@/services/booking.service";
+import { downloadBookingPDF } from "@/services/pdf.service";
 import { useRoleAccess } from "@/hooks/useRoleAccess";
 import {
     ClockIcon,
@@ -30,6 +31,7 @@ export default function BookingDetailsPage() {
     const [error, setError] = useState<string | null>(null);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelLoading, setCancelLoading] = useState(false);
+    const [downloadLoading, setDownloadLoading] = useState(false);
 
     // Role-based access control - USER and ADMIN can access this page
     useRoleAccess(['USER', 'ADMIN']);
@@ -112,6 +114,20 @@ export default function BookingDetailsPage() {
         } finally {
             setCancelLoading(false);
             setShowCancelModal(false);
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!booking) return;
+
+        setDownloadLoading(true);
+        try {
+            await downloadBookingPDF(booking.id);
+        } catch (err: any) {
+            console.error('Failed to download PDF:', err);
+            setError(err.message || 'Failed to download e-ticket');
+        } finally {
+            setDownloadLoading(false);
         }
     };
 
@@ -396,8 +412,12 @@ export default function BookingDetailsPage() {
                                 >
                                     Back to My Bookings
                                 </button>
-                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
-                                    Download E-Ticket
+                                <button
+                                    onClick={handleDownloadPDF}
+                                    disabled={downloadLoading}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {downloadLoading ? 'Downloading...' : 'Download E-Ticket'}
                                 </button>
                                 <button
                                     onClick={() => setShowCancelModal(true)}
