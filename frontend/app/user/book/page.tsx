@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/layout/Navbar";
 import { getFlightById, Flight } from "@/services/flight.service";
 import { createBooking, Passenger } from "@/services/booking.service";
 import { getSeatMap, SeatMap } from "@/services/aircraft.service";

@@ -1,8 +1,8 @@
 // app/about/page.tsx
 "use client";
 
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import Footer from "@/layout/Footer";
+import Navbar from "@/layout/Navbar";
 
 export default function AboutUs() {
   return (

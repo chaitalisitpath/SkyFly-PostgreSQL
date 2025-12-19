@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/layout/Navbar";
 import { getFlights, searchFlights, Flight, SearchFlightsParams } from "@/services/flight.service";
 import { isAuthenticated } from "@/lib/auth";
 import React, { useEffect, useState } from "react";

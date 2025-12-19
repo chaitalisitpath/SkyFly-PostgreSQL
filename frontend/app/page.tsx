@@ -1,6 +1,6 @@
-import Footer from "@/components/Footer";
-import HeroSection from "@/components/HeroSection";
-import Navbar from "@/components/Navbar";
+import Footer from "@/layout/Footer";
+import HeroSection from "@/layout/HeroSection";
+import Navbar from "@/layout/Navbar";
 
 export default function Page() {
   return (

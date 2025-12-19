@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { isAuthenticated, isAdmin, getCurrentUser } from "@/lib/auth";
-import Logout from "./Logout";
+import Logout from "../components/Logout";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);

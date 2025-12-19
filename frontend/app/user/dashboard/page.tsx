@@ -18,7 +18,7 @@ import {
     PaperAirplaneIcon,
     CogIcon
 } from "@heroicons/react/24/outline";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/layout/Navbar";
 
 type TabType = 'bookings' | 'profile';
 type BookingTabType = 'upcoming' | 'archive';
