@@ -7,12 +7,15 @@ export class UsersService {
     constructor(private prisma: PrismaService) {}
 
     async GetUser(id: number) {
+        console.log('GetUser called for id:', id);
         const user = await this.prisma.user.findFirst({
             where: { id }
         });
         if (!user) {
+            console.log('User not found for id:', id);
             throw new NotFoundException('User not found');
         }
+        console.log('User retrieved:', { id: user.id, email: user.email, isProfileComplete: user.isProfileComplete, phone: user.phone, dob: user.dob });
         return user;
     }
 
