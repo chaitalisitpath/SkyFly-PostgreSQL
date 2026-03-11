@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import Logout from "@/components/Logout";
 import { getUserBookings } from "@/services/booking.service";
 import { updateUser } from "@/services/user.service";
@@ -16,12 +17,27 @@ import {
     ClockIcon,
     ExclamationTriangleIcon,
     PaperAirplaneIcon,
-    CogIcon
+    CogIcon,
+    XMarkIcon,
+    PencilSquareIcon,
+    TrashIcon,
+    PencilIcon ,
+    EyeIcon 
 } from "@heroicons/react/24/outline";
 import Navbar from "@/layout/Navbar";
+import WriteReviewModal from "@/components/WriteReviewModal";
+import { deleteReview, getMyReviews, updateReview } from "@/services/review.service";
 
 type TabType = 'bookings' | 'profile';
 type BookingTabType = 'upcoming' | 'archive';
+type UserReview = {
+    id: number;
+    passengerId: number;
+    flightId: number;
+    stars: number;
+    content: string;
+    passenger?: { name?: string };
+};
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -105,6 +121,10 @@ function BookingsTab() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [bookingTab, setBookingTab] = useState<BookingTabType>('upcoming');
+    const [reviewedPassengerIds, setReviewedPassengerIds] = useState<Set<number>>(new Set());
+    const [myReviews, setMyReviews] = useState<UserReview[]>([]);
+    const [reviewModal, setReviewModal] = useState<{ booking: any } | null>(null);
+    const [viewReviewModal, setViewReviewModal] = useState<{ booking: any } | null>(null);
     const router = useRouter();
 
     // Separate bookings into upcoming and archived
@@ -112,7 +132,7 @@ function BookingsTab() {
     const archivedBookings = bookings.filter(booking => new Date(booking.flight.departureTime) < new Date());
 
     useEffect(() => {
-        const fetchBookings = async () => {
+        const fetchData = async () => {
             try {
                 const userBookings = await getUserBookings();
                 setBookings(userBookings);
@@ -122,10 +142,49 @@ function BookingsTab() {
             } finally {
                 setLoading(false);
             }
+
+            // Load reviews separately — failure here won't block booking display
+            try {
+                const myReviews = await getMyReviews();
+                setMyReviews(myReviews);
+                const reviewedIds = new Set<number>(myReviews.map((r: any) => r.passengerId));
+                setReviewedPassengerIds(reviewedIds);
+            } catch {
+                // Reviews not critical — silently ignore
+            }
         };
 
-        fetchBookings();
+        fetchData();
     }, []);
+
+    const isBookingReviewed = (booking: any) =>
+        booking.passengers?.every((p: any) => reviewedPassengerIds.has(p.id));
+
+    const handleReviewSuccess = (passengerId: number) => {
+        setReviewedPassengerIds(prev => new Set(prev).add(passengerId));
+        // Reload reviews so user can view/edit immediately after writing.
+        getMyReviews()
+            .then((reviews) => setMyReviews(reviews))
+            .catch(() => undefined);
+    };
+
+    const getReviewsForBooking = (booking: any) => {
+        const passengerIds = new Set<number>((booking.passengers ?? []).map((p: any) => p.id));
+        return myReviews.filter((review) => passengerIds.has(review.passengerId));
+    };
+
+    const handleReviewUpdated = (updatedReview: UserReview) => {
+        setMyReviews((prev) => prev.map((r) => (r.id === updatedReview.id ? updatedReview : r)));
+    };
+
+    const handleReviewDeleted = (deletedReview: UserReview) => {
+        setMyReviews((prev) => prev.filter((r) => r.id !== deletedReview.id));
+        setReviewedPassengerIds((prev) => {
+            const next = new Set(prev);
+            next.delete(deletedReview.passengerId);
+            return next;
+        });
+    };
 
     if (loading) {
         return (
@@ -156,6 +215,26 @@ function BookingsTab() {
 
     return (
         <div className="p-8">
+            {reviewModal && (
+                <WriteReviewModal
+                    flightId={reviewModal.booking.flight.id}
+                    flightNumber={reviewModal.booking.flight.flightNumber}
+                    fromCity={reviewModal.booking.flight.fromCity}
+                    toCity={reviewModal.booking.flight.toCity}
+                    passengers={reviewModal.booking.passengers ?? []}
+                    onClose={() => setReviewModal(null)}
+                    onSuccess={handleReviewSuccess}
+                />
+            )}
+            {viewReviewModal && (
+                <ViewReviewModal
+                    booking={viewReviewModal.booking}
+                    reviews={getReviewsForBooking(viewReviewModal.booking)}
+                    onClose={() => setViewReviewModal(null)}
+                    onUpdated={handleReviewUpdated}
+                    onDeleted={handleReviewDeleted}
+                />
+            )}
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900">My Bookings</h2>
@@ -240,6 +319,23 @@ function BookingsTab() {
                                     >
                                         <span>View Booking Details</span>
                                     </button>
+                                    {bookingTab === 'archive' && (
+                                        isBookingReviewed(booking) ? (
+                                            <button
+                                                onClick={() => setViewReviewModal({ booking })}
+                                                className="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1"
+                                            ><EyeIcon className="w-4 h-4 text-green" />
+                                                <span>View Review</span>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => setReviewModal({ booking })}
+                                                className="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1"
+                                            ><PencilIcon className="w-4 h-4 text-red" />
+                                                <span>Write a Review</span>
+                                            </button>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -264,6 +360,189 @@ function BookingsTab() {
                 </div>
             )}
         </div>
+    );
+}
+
+function ViewReviewModal({
+    booking,
+    reviews,
+    onClose,
+    onUpdated,
+    onDeleted,
+}: {
+    booking: any;
+    reviews: UserReview[];
+    onClose: () => void;
+    onUpdated: (review: UserReview) => void;
+    onDeleted: (review: UserReview) => void;
+}) {
+    const [mounted, setMounted] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editStars, setEditStars] = useState(0);
+    const [editContent, setEditContent] = useState("");
+    const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const beginEdit = (review: UserReview) => {
+        setEditingId(review.id);
+        setEditStars(review.stars);
+        setEditContent(review.content);
+        setActionError(null);
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditStars(0);
+        setEditContent("");
+        setActionError(null);
+    };
+
+    const submitEdit = async (review: UserReview) => {
+        if (editStars < 1 || editStars > 5) {
+            setActionError("Please select a rating between 1 and 5.");
+            return;
+        }
+        if (editContent.trim().length < 10) {
+            setActionError("Review must be at least 10 characters.");
+            return;
+        }
+
+        setActionLoading(review.id);
+        setActionError(null);
+        try {
+            const updated = await updateReview(review.id, {
+                stars: editStars,
+                content: editContent.trim(),
+            });
+            onUpdated(updated as UserReview);
+            cancelEdit();
+        } catch (err: any) {
+            setActionError(err?.response?.data?.message || "Failed to update review.");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleDelete = async (review: UserReview) => {
+        setActionLoading(review.id);
+        setActionError(null);
+        try {
+            await deleteReview(review.id);
+            onDeleted(review);
+        } catch (err: any) {
+            setActionError(err?.response?.data?.message || "Failed to delete review.");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    if (!mounted) {
+        return null;
+    }
+
+    return createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900">Your Reviews</h2>
+                        <p className="text-sm text-gray-500 mt-0.5">
+                            {booking.flight.flightNumber} · {booking.flight.fromCity} → {booking.flight.toCity}
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <XMarkIcon className="w-5 h-5 text-gray-500" />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                    {actionError && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                            {actionError}
+                        </div>
+                    )}
+
+                    {reviews.length === 0 ? (
+                        <p className="text-gray-600">No reviews found for this booking.</p>
+                    ) : (
+                        reviews.map((review) => (
+                            <div key={review.id} className="border border-gray-200 rounded-xl p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <p className="font-semibold text-gray-900">
+                                        {review.passenger?.name || "Passenger"}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => beginEdit(review)}
+                                            className="text-blue-600 hover:text-blue-700"
+                                            title="Edit review"
+                                        >
+                                            <PencilSquareIcon className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(review)}
+                                            className="text-red-600 hover:text-red-700"
+                                            title="Delete review"
+                                            disabled={actionLoading === review.id}
+                                        >
+                                            <TrashIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {editingId === review.id ? (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 text-amber-500">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setEditStars(star)}
+                                                    className="text-xl"
+                                                >
+                                                    {star <= editStars ? "★" : "☆"}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <textarea
+                                            value={editContent}
+                                            onChange={(e) => setEditContent(e.target.value)}
+                                            rows={4}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => submitEdit(review)}
+                                                disabled={actionLoading === review.id}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                onClick={cancelEdit}
+                                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-amber-500 mb-2">{"★".repeat(review.stars)}{"☆".repeat(5 - review.stars)}</p>
+                                        <p className="text-gray-700">{review.content}</p>
+                                    </>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>,
+        document.body
     );
 }
 

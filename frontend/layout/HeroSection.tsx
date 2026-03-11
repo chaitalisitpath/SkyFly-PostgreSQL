@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { searchFlightsAdmin, SearchFlightsParams } from "@/services/flight.service";
+import { api } from "@/lib/api";
 
 const popularCities = [
   "Delhi",
@@ -19,12 +20,48 @@ const popularCities = [
   "Lucknow"
 ];
 
+interface Review {
+  id: number;
+  stars: number;
+  content: string;
+  passenger: {
+    name: string;
+    seatClass: string;
+  };
+  flight: {
+    flightNumber: string;
+    fromCity: string;
+    toCity: string;
+  };
+}
+
+interface ReviewResponse {
+  data: Review[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
 export default function HeroSection() {
   const router = useRouter();
   
   // State to track selected cities
   const [selectedFromCity, setSelectedFromCity] = useState("");
   const [selectedToCity, setSelectedToCity] = useState("");
+
+  // State for testimonials/reviews
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const reviewsPerPage = 3;
+  const [pauseTestimonials, setPauseTestimonials] = useState(false);
+  const testimonialAutoplayRef = useRef<number | null>(null);
 
   const destinations = [
     { name: "Ahmedabad", img: "ahmedabad.jpg" },
@@ -105,6 +142,63 @@ export default function HeroSection() {
       }
     };
   }, [paused, maxIndex, destinations.length]);
+
+  // Fetch reviews from API
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        const response = await api.get(`/reviews?page=${currentPage}`);
+
+        const responseData = response.data;
+        const paginateLocally = (items: Review[]) => {
+          const computedTotalPages = Math.max(1, Math.ceil(items.length / reviewsPerPage));
+          const safePage = Math.min(Math.max(currentPage, 1), computedTotalPages);
+          const startIndex = (safePage - 1) * reviewsPerPage;
+          setReviews(items.slice(startIndex, startIndex + reviewsPerPage));
+          setTotalPages(computedTotalPages);
+        };
+
+        if (responseData && responseData.data && Array.isArray(responseData.data)) {
+          setReviews(responseData.data.slice(0, reviewsPerPage));
+          if (responseData.pagination) {
+            setTotalPages(responseData.pagination.totalPages || 1);
+          } else {
+            paginateLocally(responseData.data);
+          }
+        } else if (Array.isArray(responseData)) {
+          paginateLocally(responseData);
+        } else {
+          setReviews([]);
+          setTotalPages(1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch reviews:", error);
+        setReviews([]);
+        setTotalPages(1);
+        toast.error("Failed to load reviews");
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (totalPages <= 1 || pauseTestimonials) return;
+
+    testimonialAutoplayRef.current = window.setInterval(() => {
+      setCurrentPage((prev) => (prev >= totalPages ? 1 : prev + 1));
+    }, 3500);
+
+    return () => {
+      if (testimonialAutoplayRef.current) {
+        clearInterval(testimonialAutoplayRef.current);
+        testimonialAutoplayRef.current = null;
+      }
+    };
+  }, [pauseTestimonials, totalPages]);
 
   return (
     <div>
@@ -350,42 +444,61 @@ export default function HeroSection() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-blue-50 text-center">
+      <section
+        className="py-20 bg-blue-50 text-center"
+        onMouseEnter={() => setPauseTestimonials(true)}
+        onMouseLeave={() => setPauseTestimonials(false)}
+      >
         <h2 className="text-3xl font-bold mb-12">What Our Passengers Say</h2>
 
-        <div className="flex flex-wrap justify-center gap-8">
-          {[
-            {
-              name: "Priya Sharma",
-              img: "https://randomuser.me/api/portraits/women/68.jpg",
-              text: "Amazing flight experience! Very smooth booking and the staff was super helpful. Will fly again!",
-            },
-            {
-              name: "Rahul Verma",
-              img: "https://randomuser.me/api/portraits/men/75.jpg",
-              text: "Super comfortable seats and great food. SkyFly made my journey enjoyable!",
-            },
-            {
-              name: "Anjali Desai",
-              img: "https://randomuser.me/api/portraits/women/50.jpg",
-              text: "Affordable tickets and on-time flights. Highly recommended for frequent travelers.",
-            },
-          ].map((review) => (
-            <div
-              key={review.name}
-              className="w-80 bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center"
-            >
-              <img
-                src={review.img}
-                alt={review.name}
-                className="w-20 h-20 rounded-full mb-4"
-              />
-              <h5 className="font-bold mb-2">{review.name}</h5>
-              <p className="text-yellow-400 mb-2">★★★★★</p>
-              <p className="text-gray-600">{review.text}</p>
+        {loadingReviews ? (
+          <div className="flex justify-center items-center h-80">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : reviews && reviews.length > 0 ? (
+          <div className="mx-auto max-w-7xl overflow-hidden relative">
+            <div className="flex will-change-transform transition-transform duration-700">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="p-4"
+                  style={{ flex: `0 0 ${100 / visibleCount}%` }}
+                >
+                  <div className="w-full h-full bg-white rounded-2xl shadow-lg p-7 text-left hover:shadow-xl transition-shadow duration-300">
+                    <h5 className="font-bold mb-2 text-lg text-gray-900">{review.passenger.name}</h5>
+
+                    <div className="text-yellow-400 mb-3 text-lg flex">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span key={i}>
+                          {i < review.stars ? "★" : "☆"}
+                        </span>
+                      ))}
+                    </div>
+
+                    <p className="text-gray-600 text-sm leading-6 line-clamp-4">{review.content}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center gap-2">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-3 h-3 rounded-full ${i + 1 === currentPage ? "bg-blue-600" : "bg-gray-300"}`}
+                    aria-label={`Go to review page ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex justify-center items-center h-80">
+            <p className="text-gray-500 text-lg">No reviews yet. Be the first to review!</p>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -10,9 +10,10 @@ import { UsersModule } from './module/users/users.module';
 import { StatsModule } from './module/stats/stats.module';
 import { PdfController } from './module/pdf/pdf.controller';
 import { PdfModule } from './module/pdf/pdf.module';
+import { ReviewModule } from './module/review/review.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule, PdfModule],
+  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule, PdfModule, ReviewModule],
   controllers: [],
   providers: [GoogleAuthService],
 })

@@ -93,6 +93,7 @@ model Flight {
 
   bookings                  Booking[]
   passengers                Passenger[]
+  reviews                   FlightReview[]
 
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
@@ -130,9 +131,30 @@ model Passenger {
 
   booking     Booking  @relation(fields: [bookingId], references: [id])
   flight      Flight   @relation(fields: [flightId], references: [id])
+  reviews     FlightReview[]
 
   createdAt   DateTime @default(now())
 
   @@unique([flightId, seatNumber]) // ensures seat cannot be double-booked
+}
+
+//////////////////// FLIGHT REVIEW ////////////////////
+
+model FlightReview {
+  id           Int       @id @default(autoincrement())
+  passengerId  Int
+  flightId     Int
+
+  stars        Int       // keep in range 1-5 via DTO/service validation
+  content      String    @db.Text
+
+  passenger    Passenger @relation(fields: [passengerId], references: [id])
+  flight       Flight    @relation(fields: [flightId], references: [id])
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([passengerId, flightId])
+  @@index([flightId, createdAt])
 }
 

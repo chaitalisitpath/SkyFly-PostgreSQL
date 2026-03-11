@@ -15,9 +15,12 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "name" TEXT,
     "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "dob" TIMESTAMP(3),
     "password" TEXT,
     "role" "Role" NOT NULL DEFAULT 'USER',
     "provider" TEXT NOT NULL DEFAULT 'local',
+    "isProfileComplete" BOOLEAN NOT NULL DEFAULT false,
     "googleId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -88,8 +91,24 @@ CREATE TABLE "Passenger" (
     CONSTRAINT "Passenger_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "FlightReview" (
+    "id" SERIAL NOT NULL,
+    "passengerId" INTEGER NOT NULL,
+    "flightId" INTEGER NOT NULL,
+    "stars" INTEGER NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "FlightReview_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
@@ -102,6 +121,12 @@ CREATE UNIQUE INDEX "Flight_flightNumber_key" ON "Flight"("flightNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Passenger_flightId_seatNumber_key" ON "Passenger"("flightId", "seatNumber");
+
+-- CreateIndex
+CREATE INDEX "FlightReview_flightId_createdAt_idx" ON "FlightReview"("flightId", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FlightReview_passengerId_flightId_key" ON "FlightReview"("passengerId", "flightId");
 
 -- AddForeignKey
 ALTER TABLE "Flight" ADD CONSTRAINT "Flight_aircraftId_fkey" FOREIGN KEY ("aircraftId") REFERENCES "Aircraft"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -117,3 +142,9 @@ ALTER TABLE "Passenger" ADD CONSTRAINT "Passenger_bookingId_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "Passenger" ADD CONSTRAINT "Passenger_flightId_fkey" FOREIGN KEY ("flightId") REFERENCES "Flight"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FlightReview" ADD CONSTRAINT "FlightReview_passengerId_fkey" FOREIGN KEY ("passengerId") REFERENCES "Passenger"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FlightReview" ADD CONSTRAINT "FlightReview_flightId_fkey" FOREIGN KEY ("flightId") REFERENCES "Flight"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
