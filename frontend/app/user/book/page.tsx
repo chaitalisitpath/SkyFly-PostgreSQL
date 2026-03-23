@@ -474,8 +474,7 @@ export default function BookFlight() {
                 <div>
                   <p className="text-sm text-gray-600">Departure</p>
                   <p className="font-semibold">
-                    {new Date(selectedFlight.departureTime).toLocaleString("en-GB", {
-                      timeZone: "UTC",
+                    {new Date(selectedFlight.departureTime).toLocaleString(undefined, {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
@@ -484,7 +483,7 @@ export default function BookFlight() {
                       hour12: false,
                     })
 
-                    } IST
+                    }
                   </p>
                 </div>
               </div>

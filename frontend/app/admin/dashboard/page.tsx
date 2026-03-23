@@ -576,9 +576,6 @@ function FlightsManagementTab() {
                                     <tr key={flight.id} className="hover:bg-slate-50 transition-colors duration-150">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                    <PaperAirplaneIcon className="w-4 h-4 text-blue-600" />
-                                                </div>
                                                 <div className="text-sm font-bold text-slate-900">{flight.flightNumber}</div>
                                             </div>
                                         </td>
@@ -593,11 +590,27 @@ function FlightsManagementTab() {
                                             <div className="text-sm font-semibold text-slate-900">{flight.aircraft?.model ?? 'Unknown aircraft'}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-slate-900">{formatDateTime(flight.departureTime)}</div>
+                                            <div className="text-sm font-medium text-slate-900">{new Date(flight.departureTime).toLocaleString(undefined, {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                timeZone: "UTC",
+                                                hour12: false
+                                            })}</div>
                                             <div className="text-xs text-slate-500">{flight.departureAirport.split('(')[0].trim()}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-slate-900">{formatDateTime(flight.arrivalTime)}</div>
+                                            <div className="text-sm font-medium text-slate-900">{new Date(flight.arrivalTime).toLocaleString(undefined, {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                timeZone: "UTC",
+                                                hour12: false
+                                            })}</div>
                                             <div className="text-xs text-slate-500">{flight.arrivalAirport.split('(')[0].trim()}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -856,7 +869,15 @@ function BookingsManagementTab() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-slate-900">{formatDateTime(booking.createdAt)}</div>
+                                            <div className="text-sm font-medium text-slate-900">{new Date(booking.createdAt).toLocaleString(undefined,
+                                            {   day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                timeZone: "UTC",
+                                                hour12: false
+                                            })}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
@@ -913,6 +934,46 @@ function BookingsManagementTab() {
                                         <div>
                                             <span className="text-sm text-slate-500">Customer:</span>
                                             <p className="font-semibold text-slate-900">{selectedBooking.user.name}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Departure:</span>
+                                            <p className="font-semibold text-slate-900">{new Date(selectedBooking.flight.departureTime).toLocaleString(undefined,
+                                            {   day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                timeZone: "UTC",
+                                                hour12: false
+                                            })}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Arrival:</span>
+                                            <p className="font-semibold text-slate-900">{new Date(selectedBooking.flight.arrivalTime).toLocaleString(undefined,
+                                            {   day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                timeZone: "UTC",
+                                                hour12: false,
+                                            })}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Booked On:</span>
+                                            <p className="font-semibold text-slate-900">{new Date(selectedBooking.createdAt).toLocaleString(undefined,
+                                            {   day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                timeZone: "UTC",
+                                                hour12: false
+                                            })}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm text-slate-500">Total Amount:</span>
+                                            <p className="font-semibold text-emerald-600">₹{selectedBooking.totalAmount.toLocaleString()}</p>
                                         </div>
                                     </div>
                                 </div>

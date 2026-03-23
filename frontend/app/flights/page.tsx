@@ -12,6 +12,27 @@ export default function Flights() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const browserLocale = typeof navigator !== "undefined" ? navigator.language : undefined;
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString(browserLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString(browserLocale, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
   useEffect(() => {
     const fetchFlights = async () => {
       setIsSearching(true);
@@ -87,13 +108,7 @@ export default function Flights() {
                 <div className="flex items-center justify-center md:justify-start space-x-4">
                   {/* Departure */}
                   <div className="text-center">
-                    <p className="text-xl font-bold text-gray-900">{new Date(flight.departureTime).toLocaleString("en-GB", {
-                      timeZone: "UTC",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
-                    } IST</p>
+                    <p className="text-xl font-bold text-gray-900">{formatTime(flight.departureTime)}</p>
                     <p className="text-sm text-gray-600">{flight.fromCity}</p>
                   </div>
 
@@ -109,13 +124,7 @@ export default function Flights() {
 
                   {/* Arrival */}
                   <div className="text-center">
-                    <p className="text-xl font-bold text-gray-900">{new Date(flight.arrivalTime).toLocaleString("en-GB", {
-                      timeZone: "UTC",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
-                    } IST</p>
+                    <p className="text-xl font-bold text-gray-900">{formatTime(flight.arrivalTime)}</p>
                     <p className="text-sm text-gray-600">{flight.toCity}</p>
                   </div>
                 </div>
@@ -187,32 +196,12 @@ export default function Flights() {
                   <div>
                     <p className="text-sm font-medium text-gray-500">From</p>
                     <p className="text-lg font-semibold text-gray-900">{selectedFlight.fromCity}</p>
-                    <p className="text-sm text-gray-600">{new Date(selectedFlight.departureTime).toLocaleString("en-GB", {
-                      timeZone: "UTC",
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
-
-                    } IST</p>
+                    <p className="text-sm text-gray-600">{formatDateTime(selectedFlight.departureTime)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">To</p>
                     <p className="text-lg font-semibold text-gray-900">{selectedFlight.toCity}</p>
-                    <p className="text-sm text-gray-600">{new Date(selectedFlight.arrivalTime).toLocaleString("en-GB", {
-                      timeZone: "UTC",
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
-
-                    } IST</p>
+                    <p className="text-sm text-gray-600">{formatDateTime(selectedFlight.arrivalTime)}</p>
                   </div>
                 </div>
 

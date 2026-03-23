@@ -201,11 +201,11 @@ export default function HeroSection() {
   }, [pauseTestimonials, totalPages]);
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <Toaster position="bottom-right" />
       {/* Hero Section */}
       <section
-        className="relative h-screen bg-cover bg-center flex items-center justify-center"
+        className="relative h-screen bg-cover bg-center flex items-center justify-center overflow-hidden"
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80')",
@@ -232,7 +232,7 @@ export default function HeroSection() {
               Explore the world with comfort and style
             </p>
             <p className="text-lg text-white/80 drop-shadow-lg">
-              Book your dream flight in just a few clicks ✈️
+              Book your dream flight in just a few clicks 
             </p>
           </div>
 

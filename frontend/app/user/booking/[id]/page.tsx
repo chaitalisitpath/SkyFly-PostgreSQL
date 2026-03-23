@@ -73,7 +73,7 @@ export default function BookingDetailsPage() {
     };
 
     const formatDateTime = (dateString: string) => {
-        return new Date(dateString).toLocaleString('en-IN', {
+        return new Date(dateString).toLocaleString(undefined, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -84,7 +84,7 @@ export default function BookingDetailsPage() {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-IN', {
+        return new Date(dateString).toLocaleDateString(undefined, {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -93,7 +93,7 @@ export default function BookingDetailsPage() {
     };
 
     const formatTime = (dateString: string) => {
-        return new Date(dateString).toLocaleTimeString('en-IN', {
+        return new Date(dateString).toLocaleTimeString(undefined, {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true

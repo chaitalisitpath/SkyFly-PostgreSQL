@@ -42,6 +42,12 @@ const terminals = [1, 2, 3, 4];
 
 const flightStatuses = ["ON_TIME", "DELAYED", "CANCELLED"];
 
+const toLocalDateTimeInputValue = (dateValue: string) => {
+  const date = new Date(dateValue);
+  const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16);
+};
+
 export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: EditFlightModalProps) {
   const [formData, setFormData] = useState({
     flightNumber: "",
@@ -77,8 +83,8 @@ export default function EditFlightModal({ isOpen, onClose, onSuccess, flight }: 
         arrivalAirport: flight.arrivalAirport,
         departureAirportTerminal: flight.departureAirportTerminal.toString(),
         arrivalAirportTerminal: flight.arrivalAirportTerminal.toString(),
-        departureTime: new Date(flight.departureTime).toISOString().slice(0, 16),
-        arrivalTime: new Date(flight.arrivalTime).toISOString().slice(0, 16),
+        departureTime: toLocalDateTimeInputValue(flight.departureTime),
+        arrivalTime: toLocalDateTimeInputValue(flight.arrivalTime),
         aircraftId: flight.aircraftId.toString(),
         economyPrice: flight.economyPrice?.toString() || "",
         businessPrice: flight.businessPrice?.toString() || "",

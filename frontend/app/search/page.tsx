@@ -263,7 +263,7 @@ export default function SearchPage() {
                 <h1 className="text-2xl font-bold text-slate-900">
                   {flights.length > 0 ? `${flights.length} Flights found` : 'Search for flights'}
                 </h1>
-                <p className="text-sm text-slate-500">Times displayed in IST. Pricing reflects current cap.</p>
+                <p className="text-sm text-slate-500">Times displayed in your local timezone. Pricing reflects current cap.</p>
               </div>
               <div className="flex items-center gap-2 text-xs bg-slate-100 border border-slate-200 rounded-full px-3 py-1 text-slate-600">
                 <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -300,12 +300,11 @@ export default function SearchPage() {
                       <div className="md:col-span-5 flex items-center gap-6">
                         <div className="text-left">
                           <p className="text-xl font-bold text-slate-900">
-                            {new Date(flight.departureTime).toLocaleString("en-GB", {
-                              timeZone: "UTC",
+                            {new Date(flight.departureTime).toLocaleTimeString(undefined, {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: false,
-                            })} IST
+                            })}
                           </p>
                           <p className="text-sm text-slate-600">{flight.fromCity}</p>
                         </div>
@@ -321,12 +320,11 @@ export default function SearchPage() {
 
                         <div className="text-left">
                           <p className="text-xl font-bold text-slate-900">
-                            {new Date(flight.arrivalTime).toLocaleString("en-GB", {
-                              timeZone: "UTC",
+                            {new Date(flight.arrivalTime).toLocaleTimeString(undefined, {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: false,
-                            })} IST
+                            })}
                           </p>
                           <p className="text-sm text-slate-600">{flight.toCity}</p>
                         </div>

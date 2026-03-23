@@ -118,12 +118,38 @@ export interface SearchFlightsResponse {
   };
 }
 
+const isLocalDateTimeInput = (value: string) => {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(value);
+};
+
+const normalizeSearchDateTimeToUtc = (key: string, value: string) => {
+  const dateTimeKeys = new Set([
+    'departureTime',
+    'arrivalTime',
+    'departureTimeFrom',
+    'departureTimeTo',
+    'arrivalTimeFrom',
+    'arrivalTimeTo',
+  ]);
+
+  if (!dateTimeKeys.has(key)) {
+    return value;
+  }
+
+  // datetime-local values are timezone-naive local times; convert to UTC ISO for backend filtering.
+  if (isLocalDateTimeInput(value)) {
+    return new Date(value).toISOString();
+  }
+
+  return value;
+};
+
 export const searchFlights = async (params: SearchFlightsParams): Promise<Flight[]> => {
   const queryParams = new URLSearchParams();
   if (params.fromCity) queryParams.append('fromCity', params.fromCity);
   if (params.toCity) queryParams.append('toCity', params.toCity);
-  if (params.departureTime) queryParams.append('departureTime', params.departureTime);
-  if (params.arrivalTime) queryParams.append('arrivalTime', params.arrivalTime);
+  if (params.departureTime) queryParams.append('departureTime', normalizeSearchDateTimeToUtc('departureTime', params.departureTime));
+  if (params.arrivalTime) queryParams.append('arrivalTime', normalizeSearchDateTimeToUtc('arrivalTime', params.arrivalTime));
 
   const response = await api.get(`/flights/search?${queryParams.toString()}`);
   return response.data;
@@ -136,7 +162,7 @@ export const searchFlightsAdmin = async (params: SearchFlightsParams): Promise<S
       if (Array.isArray(value)) {
         value.forEach(v => queryParams.append(key, v));
       } else {
-        queryParams.append(key, value.toString());
+        queryParams.append(key, normalizeSearchDateTimeToUtc(key, value.toString()));
       }
     }
   });

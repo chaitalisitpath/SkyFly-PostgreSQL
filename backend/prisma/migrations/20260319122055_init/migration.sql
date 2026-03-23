@@ -10,6 +10,9 @@ CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE', 'OTHER');
 -- CreateEnum
 CREATE TYPE "SeatClass" AS ENUM ('ECONOMY', 'BUSINESS', 'FIRST');
 
+-- CreateEnum
+CREATE TYPE "ChatSender" AS ENUM ('USER', 'BOT');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -26,6 +29,18 @@ CREATE TABLE "User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ChatMessage" (
+    "id" SERIAL NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "sender" "ChatSender" NOT NULL,
+    "message" TEXT NOT NULL,
+    "userId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ChatMessage_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -114,6 +129,12 @@ CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
 
 -- CreateIndex
+CREATE INDEX "ChatMessage_sessionId_createdAt_idx" ON "ChatMessage"("sessionId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "ChatMessage_userId_idx" ON "ChatMessage"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Aircraft_model_key" ON "Aircraft"("model");
 
 -- CreateIndex
@@ -127,6 +148,9 @@ CREATE INDEX "FlightReview_flightId_createdAt_idx" ON "FlightReview"("flightId",
 
 -- CreateIndex
 CREATE UNIQUE INDEX "FlightReview_passengerId_flightId_key" ON "FlightReview"("passengerId", "flightId");
+
+-- AddForeignKey
+ALTER TABLE "ChatMessage" ADD CONSTRAINT "ChatMessage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Flight" ADD CONSTRAINT "Flight_aircraftId_fkey" FOREIGN KEY ("aircraftId") REFERENCES "Aircraft"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

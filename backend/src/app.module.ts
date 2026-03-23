@@ -11,9 +11,10 @@ import { StatsModule } from './module/stats/stats.module';
 import { PdfController } from './module/pdf/pdf.controller';
 import { PdfModule } from './module/pdf/pdf.module';
 import { ReviewModule } from './module/review/review.module';
+import { ChatModule } from './module/chat/chat.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule, PdfModule, ReviewModule],
+  imports: [PrismaModule, AuthModule, AircraftModule, FlightModule, BookingModule, MailModule, UsersModule, StatsModule, PdfModule, ReviewModule, ChatModule],
   controllers: [],
   providers: [GoogleAuthService],
 })

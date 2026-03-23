@@ -285,20 +285,22 @@ function BookingsTab() {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <CalendarDaysIcon className="w-5 h-5 text-green-500" />
-                                        <span>{new Date(booking.flight.departureTime).toLocaleDateString()}</span>
+                                        <span>{new Date(booking.flight.departureTime).toLocaleDateString(undefined,
+                                            {   day: "2-digit",
+                                                month: "short",
+                                                year: "numeric"
+                                            }
+                                        )
+                                        }</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <ClockIcon className="w-5 h-5 text-purple-500" />
-                                        <span>{new Date(booking.flight.departureTime).toLocaleString("en-GB", {
-                                            timeZone: "UTC",
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
+                                        <span>{new Date(booking.flight.departureTime).toLocaleString(undefined, {
                                             hour: "2-digit",
                                             minute: "2-digit",
                                             hour12: false,
                                         })
-                                        } IST</span>
+                                        }</span>
                                     </div>
                                 </div>
                                 <div className="text-sm text-gray-600">
