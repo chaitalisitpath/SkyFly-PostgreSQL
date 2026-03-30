@@ -26,7 +26,7 @@ export class ChatGateway {
     await this.chatService.saveMessage(client.id, 'USER', cleanMessage);
 
     // Get bot reply from service based on user text.
-    const reply = this.chatService.getReply(cleanMessage);
+    const reply = await this.chatService.getReply(cleanMessage);
 
     // Persist generated bot reply for complete conversation history.
     await this.chatService.saveMessage(client.id, 'BOT', reply);
