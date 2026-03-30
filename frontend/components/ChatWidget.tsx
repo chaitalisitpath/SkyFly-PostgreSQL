@@ -15,39 +15,29 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<ChatLine[]>([]);
   const [botTyping, setBotTyping] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
-  const botReplyTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => setIsConnected(false);
+    const onBotTyping = (typing: boolean) => setBotTyping(Boolean(typing));
 
     const onReceiveMessage = (msg: string) => {
       const clean = msg.startsWith("Bot: ") ? msg.slice(5) : msg;
-      setBotTyping(true);
-
-      if (botReplyTimerRef.current) {
-        window.clearTimeout(botReplyTimerRef.current);
-      }
-
-      botReplyTimerRef.current = window.setTimeout(() => {
-        setMessages((prev) => [...prev, { sender: "bot", text: clean }]);
-        setBotTyping(false);
-        botReplyTimerRef.current = null;
-      }, 900);
+      setMessages((prev) => [...prev, { sender: "bot", text: clean }]);
+      setBotTyping(false);
     };
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("botTyping", onBotTyping);
     socket.on("receiveMessage", onReceiveMessage);
     socket.connect();
 
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+      socket.off("botTyping", onBotTyping);
       socket.off("receiveMessage", onReceiveMessage);
-      if (botReplyTimerRef.current) {
-        window.clearTimeout(botReplyTimerRef.current);
-      }
       socket.disconnect();
     };
   }, []);
@@ -60,6 +50,7 @@ export default function ChatWidget() {
     const trimmed = message.trim();
     if (!trimmed) return;
 
+    setBotTyping(true);
     socket.emit("sendMessage", trimmed);
     setMessages((prev) => [...prev, { sender: "user", text: trimmed }]);
     setMessage("");

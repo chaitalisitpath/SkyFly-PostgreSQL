@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
 import { searchFlightsAdmin, SearchFlightsParams } from "@/services/flight.service";
 import { api } from "@/lib/api";
 
@@ -47,6 +48,13 @@ interface ReviewResponse {
   };
 }
 
+const isReviewResponse = (value: unknown): value is ReviewResponse => {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Partial<ReviewResponse>;
+  return Array.isArray(candidate.data);
+};
+
 export default function HeroSection() {
   const router = useRouter();
   
@@ -62,6 +70,8 @@ export default function HeroSection() {
   const reviewsPerPage = 3;
   const [pauseTestimonials, setPauseTestimonials] = useState(false);
   const testimonialAutoplayRef = useRef<number | null>(null);
+  const hasLoadedReviewsRef = useRef(false);
+  const reviewErrorToastShownRef = useRef(false);
 
   const destinations = [
     { name: "Ahmedabad", img: "ahmedabad.jpg" },
@@ -146,21 +156,43 @@ export default function HeroSection() {
   // Fetch reviews from API
   useEffect(() => {
     const fetchReviews = async () => {
+      const MAX_ATTEMPTS = 2;
+
       try {
         setLoadingReviews(true);
-        const response = await api.get(`/reviews?page=${currentPage}`);
+        let responseData: ReviewResponse | Review[] | null = null;
 
-        const responseData = response.data;
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+          try {
+            const response = await api.get(`/reviews?page=${currentPage}`);
+            responseData = response.data;
+            break;
+          } catch (error) {
+            const isAxiosNetworkError = axios.isAxiosError(error) && !error.response;
+            const isLastAttempt = attempt === MAX_ATTEMPTS;
+
+            if (!isAxiosNetworkError || isLastAttempt) {
+              throw error;
+            }
+
+            // Brief delay before retrying transient network failures.
+            await new Promise((resolve) => setTimeout(resolve, 400));
+          }
+        }
+
         const paginateLocally = (items: Review[]) => {
           const computedTotalPages = Math.max(1, Math.ceil(items.length / reviewsPerPage));
           const safePage = Math.min(Math.max(currentPage, 1), computedTotalPages);
           const startIndex = (safePage - 1) * reviewsPerPage;
           setReviews(items.slice(startIndex, startIndex + reviewsPerPage));
           setTotalPages(computedTotalPages);
+          hasLoadedReviewsRef.current = true;
         };
 
-        if (responseData && responseData.data && Array.isArray(responseData.data)) {
+        if (isReviewResponse(responseData)) {
           setReviews(responseData.data.slice(0, reviewsPerPage));
+          hasLoadedReviewsRef.current = true;
+          reviewErrorToastShownRef.current = false;
           if (responseData.pagination) {
             setTotalPages(responseData.pagination.totalPages || 1);
           } else {
@@ -168,15 +200,21 @@ export default function HeroSection() {
           }
         } else if (Array.isArray(responseData)) {
           paginateLocally(responseData);
+          reviewErrorToastShownRef.current = false;
         } else {
           setReviews([]);
           setTotalPages(1);
         }
       } catch (error) {
         console.error("Failed to fetch reviews:", error);
-        setReviews([]);
-        setTotalPages(1);
-        toast.error("Failed to load reviews");
+        if (!hasLoadedReviewsRef.current) {
+          setReviews([]);
+          setTotalPages(1);
+        }
+        if (!reviewErrorToastShownRef.current) {
+          toast.error("Failed to load reviews");
+          reviewErrorToastShownRef.current = true;
+        }
       } finally {
         setLoadingReviews(false);
       }
@@ -213,13 +251,6 @@ export default function HeroSection() {
       >
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-black/20"></div>
-
-        {/* Plane Animation */}
-        <img
-          src="/plane-removebg-preview.png"
-          alt=""
-          className="absolute w-44 right-[-200px] top-2/5 animate-fly opacity-95 z-10"
-        />
 
         {/* Hero Content */}
         <div className="relative z-20 max-w-6xl mx-auto px-4 w-full">
