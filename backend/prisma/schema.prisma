@@ -6,7 +6,116 @@ datasource db {
   provider = "postgresql"
 }
 
-//////////////////// ENUMS ////////////////////
+model User {
+  id                Int           @id @default(autoincrement())
+  name              String?
+  email             String        @unique
+  phone             String?       @unique
+  dob               DateTime?
+  password          String?
+  role              Role          @default(USER)
+  provider          String        @default("local")
+  isProfileComplete Boolean       @default(false)
+  googleId          String?       @unique
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  bookings          Booking[]
+  chatMessages      ChatMessage[]
+}
+
+model ChatMessage {
+  id        Int        @id @default(autoincrement())
+  sessionId String
+  sender    ChatSender
+  message   String
+  userId    Int?
+  createdAt DateTime   @default(now())
+  user      User?      @relation(fields: [userId], references: [id])
+
+  @@index([sessionId, createdAt])
+  @@index([userId])
+}
+
+/// ///////////////// AIRCRAFT ////////////////////
+model Aircraft {
+  id                Int      @id @default(autoincrement())
+  model             String   @unique
+  economySeatCount  Int?
+  businessSeatCount Int?
+  firstSeatCount    Int?
+  createdAt         DateTime @default(now())
+  flights           Flight[]
+}
+
+/// ///////////////// FLIGHT ////////////////////
+model Flight {
+  id                       Int            @id @default(autoincrement())
+  flightNumber             String         @unique
+  departureAirport         String
+  arrivalAirport           String
+  departureAirportTerminal Int
+  arrivalAirportTerminal   Int
+  fromCity                 String
+  toCity                   String
+  departureTime            DateTime
+  arrivalTime              DateTime
+  status                   FlightStatus   @default(ON_TIME)
+  economyPrice             Decimal?
+  businessPrice            Decimal?
+  firstPrice               Decimal?
+  aircraftId               Int
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  bookings                 Booking[]
+  aircraft                 Aircraft       @relation(fields: [aircraftId], references: [id])
+  reviews                  FlightReview[]
+  passengers               Passenger[]
+}
+
+model Booking {
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  flightId       Int
+  passengerCount Int
+  totalAmount    Decimal
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  flight         Flight      @relation(fields: [flightId], references: [id])
+  user           User        @relation(fields: [userId], references: [id])
+  passengers     Passenger[]
+}
+
+model Passenger {
+  id         Int            @id @default(autoincrement())
+  bookingId  Int
+  flightId   Int
+  name       String
+  age        Int
+  gender     Gender
+  seatClass  SeatClass
+  seatNumber String
+  createdAt  DateTime       @default(now())
+  reviews    FlightReview[]
+  booking    Booking        @relation(fields: [bookingId], references: [id])
+  flight     Flight         @relation(fields: [flightId], references: [id])
+
+  @@unique([flightId, seatNumber])
+}
+
+model FlightReview {
+  id          Int       @id @default(autoincrement())
+  passengerId Int
+  flightId    Int
+  stars       Int
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  flight      Flight    @relation(fields: [flightId], references: [id])
+  passenger   Passenger @relation(fields: [passengerId], references: [id])
+
+  @@unique([passengerId, flightId])
+  @@index([flightId, createdAt])
+}
 
 enum Role {
   USER
@@ -35,147 +144,3 @@ enum ChatSender {
   USER
   BOT
 }
-
-//////////////////// MODELS ////////////////////
-
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String?
-  email     String   @unique
-  phone     String?   @unique
-  dob      DateTime?  
-  password  String?
-  role      Role     @default(USER)
-  provider  String   @default("local")
-  isProfileComplete Boolean @default(false)
-  googleId  String?  @unique
-
-  bookings  Booking[]
-  chatMessages ChatMessage[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ChatMessage {
-  id        Int        @id @default(autoincrement())
-  sessionId String
-  sender    ChatSender
-  message   String     @db.Text
-  userId    Int?
-
-  user      User?      @relation(fields: [userId], references: [id])
-
-  createdAt DateTime   @default(now())
-
-  @@index([sessionId, createdAt])
-  @@index([userId])
-}
-
-//////////////////// AIRCRAFT ////////////////////
-// Admin defines seat capacity per class
-model Aircraft {
-  id                 Int     @id @default(autoincrement())
-  model              String  @unique   // A320, B737
-
-  economySeatCount   Int?
-  businessSeatCount  Int?
-  firstSeatCount     Int?
-
-  flights            Flight[]
-
-  createdAt DateTime @default(now())
-}
-
-//////////////////// FLIGHT ////////////////////
-// Aircraft selected here
-model Flight {
-  id                        Int           @id @default(autoincrement())
-  flightNumber              String        @unique
-
-  departureAirport          String
-  arrivalAirport            String
-  departureAirportTerminal  Int
-  arrivalAirportTerminal    Int
-
-  fromCity                  String
-  toCity                    String
-  departureTime             DateTime
-  arrivalTime               DateTime
-
-  status                    FlightStatus  @default(ON_TIME)
-
-  economyPrice              Decimal?      // optional
-  businessPrice             Decimal?      // optional
-  firstPrice                Decimal?      // optional
-
-  aircraftId                Int
-  aircraft                  Aircraft      @relation(fields: [aircraftId], references: [id])
-
-  bookings                  Booking[]
-  passengers                Passenger[]
-  reviews                   FlightReview[]
-
-  createdAt                 DateTime      @default(now())
-  updatedAt                 DateTime      @updatedAt
-}
-
-//////////////////// BOOKING ////////////////////
-
-model Booking {
-  id               Int            @id @default(autoincrement())
-  userId           Int
-  flightId         Int
-  passengerCount   Int
-  totalAmount      Decimal
-
-  user             User           @relation(fields: [userId], references: [id])
-  flight           Flight         @relation(fields: [flightId], references: [id])
-
-  passengers       Passenger[]
-
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-}
-
-//////////////////// PASSENGER ////////////////////
-
-model Passenger {
-  id          Int      @id @default(autoincrement())
-  bookingId   Int
-  flightId    Int      // added for seat uniqueness across flight
-  name        String
-  age         Int
-  gender      Gender
-  seatClass   SeatClass
-  seatNumber  String   // e.g. 12A, 3C
-
-  booking     Booking  @relation(fields: [bookingId], references: [id])
-  flight      Flight   @relation(fields: [flightId], references: [id])
-  reviews     FlightReview[]
-
-  createdAt   DateTime @default(now())
-
-  @@unique([flightId, seatNumber]) // ensures seat cannot be double-booked
-}
-
-//////////////////// FLIGHT REVIEW ////////////////////
-
-model FlightReview {
-  id           Int       @id @default(autoincrement())
-  passengerId  Int
-  flightId     Int
-
-  stars        Int       // keep in range 1-5 via DTO/service validation
-  content      String    @db.Text
-
-  passenger    Passenger @relation(fields: [passengerId], references: [id])
-  flight       Flight    @relation(fields: [flightId], references: [id])
-
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  @@unique([passengerId, flightId])
-  @@index([flightId, createdAt])
-}
-

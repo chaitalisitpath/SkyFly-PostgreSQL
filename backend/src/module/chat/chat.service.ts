@@ -84,6 +84,65 @@ export class ChatService {
     `;
   }
 
+  async getSupportHistory(userId: number) {
+    const sessionId = `support:${userId}`;
+    return this.prisma.chatMessage.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        sender: true,
+        message: true,
+        userId: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async getSupportConversations() {
+    const messages = await this.prisma.chatMessage.findMany({
+      where: {
+        sessionId: {
+          startsWith: 'support:',
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        sessionId: true,
+        userId: true,
+        message: true,
+        createdAt: true,
+      },
+      take: 300,
+    });
+
+    const seen = new Set<string>();
+    const conversations: Array<{
+      sessionId: string;
+      userId: number | null;
+      lastMessage: string;
+      lastMessageAt: Date;
+    }> = [];
+
+    for (const message of messages) {
+      if (seen.has(message.sessionId)) {
+        continue;
+      }
+
+      seen.add(message.sessionId);
+      conversations.push({
+        sessionId: message.sessionId,
+        userId: message.userId,
+        lastMessage: message.message,
+        lastMessageAt: message.createdAt,
+      });
+    }
+
+    return conversations;
+  }
+
   async getReply(message: string): Promise<string> {
     const normalizedMessage = message.trim();
     if (!normalizedMessage) {

@@ -7,8 +7,9 @@ import AddFlightModal from "@/components/AddFlightModal";
 import EditFlightModal from "@/components/EditFlightModal";
 import AddAircraftModal from "@/components/AddAircraftModal";
 import EditAircraftModal from "@/components/EditAircraftModal";
+import AdminSupportPanel from "@/components/AdminSupportPanel";
 import { getFlights, deleteFlight, Flight, searchFlightsAdmin, SearchFlightsParams, SearchFlightsResponse } from "@/services/flight.service";
-import { getStats, Stats } from "@/services/stats.service";
+import { getBookingsTrend, BookingTrendRange, BookingsTrend, getStats, Stats } from "@/services/stats.service";
 
 const availableCities = [
   "Delhi",
@@ -45,7 +46,7 @@ import {
   XMarkIcon
 } from "@heroicons/react/24/outline";
 
-type TabType = 'overview' | 'flights' | 'aircraft' | 'bookings';
+type TabType = 'overview' | 'flights' | 'aircraft' | 'bookings' | 'support';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -85,7 +86,8 @@ export default function AdminDashboardPage() {
         { id: 'overview' as TabType, label: 'Overview', icon: ChartBarIcon },
         { id: 'flights' as TabType, label: 'Flight Management', icon: PaperAirplaneIcon },
         { id: 'aircraft' as TabType, label: 'Aircraft Management', icon: RocketLaunchIcon },
-        { id: 'bookings' as TabType, label: 'Booking Management', icon: TicketIcon }
+        { id: 'bookings' as TabType, label: 'Booking Management', icon: TicketIcon },
+        { id: 'support' as TabType, label: 'Human Support', icon: ClipboardDocumentListIcon }
     ];
 
     return (
@@ -142,6 +144,7 @@ export default function AdminDashboardPage() {
                     {activeTab === 'flights' && <FlightsManagementTab />}
                     {activeTab === 'aircraft' && <AircraftManagementTab />}
                     {activeTab === 'bookings' && <BookingsManagementTab />}
+                    {activeTab === 'support' && <AdminSupportPanel />}
                 </div>
             </div>
         </div>
@@ -230,94 +233,8 @@ function AdminOverviewTab() {
                 </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
-                    <div className="flex items-center space-x-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                            <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900">Recent Bookings</h3>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <PaperAirplaneIcon className="w-4 h-4 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900">SF-202: Delhi → Mumbai</p>
-                                    <p className="text-xs text-slate-500">John Doe • 2 hours ago</p>
-                                </div>
-                            </div>
-                            <span className="text-lg font-bold text-emerald-600">₹8,500</span>
-                        </div>
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                    <PaperAirplaneIcon className="w-4 h-4 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900">SF-305: Mumbai → Bangalore</p>
-                                    <p className="text-xs text-slate-500">Jane Smith • 4 hours ago</p>
-                                </div>
-                            </div>
-                            <span className="text-lg font-bold text-emerald-600">₹6,200</span>
-                        </div>
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <PaperAirplaneIcon className="w-4 h-4 text-purple-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900">SF-156: Delhi → Chennai</p>
-                                    <p className="text-xs text-slate-500">Mike Johnson • 6 hours ago</p>
-                                </div>
-                            </div>
-                            <span className="text-lg font-bold text-emerald-600">₹9,500</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
-                    <div className="flex items-center space-x-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                            <CogIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900">System Status</h3>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm font-medium text-slate-700">Flight API</span>
-                            </div>
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Online</span>
-                        </div>
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm font-medium text-slate-700">Booking System</span>
-                            </div>
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Online</span>
-                        </div>
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm font-medium text-slate-700">Payment Gateway</span>
-                            </div>
-                            <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">Maintenance</span>
-                        </div>
-                        <div className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm font-medium text-slate-700">Database</span>
-                            </div>
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Online</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Bookings Chart */}
+            <BookingsChart />
         </div>
     );
 }
@@ -1202,4 +1119,153 @@ function AircraftManagementTab() {
     );
 }
 
+// Bookings Chart Component
+function BookingsChart() {
+    const [filterPeriod, setFilterPeriod] = useState<BookingTrendRange>('week');
+    const [trendData, setTrendData] = useState<BookingsTrend | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    useEffect(() => {
+        const fetchTrendData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await getBookingsTrend(filterPeriod);
+                setTrendData(data);
+            } catch (fetchError) {
+                console.error('Error fetching booking trend:', fetchError);
+                setError('Unable to load booking trend data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTrendData();
+    }, [filterPeriod, refreshKey]);
+
+    const labels = trendData?.labels ?? [];
+    const values = trendData?.values ?? [];
+    const maxBookings = Math.max(...values, 1);
+    const yAxisMax = Math.max(5, Math.ceil(maxBookings / 5) * 5);
+
+    return (
+        <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <ChartBarIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-slate-900">Bookings Analytics</h3>
+                        <p className="text-sm text-slate-500">Booking trends and patterns</p>
+                    </div>
+                </div>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setFilterPeriod('week')}
+                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                            filterPeriod === 'week'
+                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                        }`}
+                    >
+                        This Week
+                    </button>
+                    <button
+                        onClick={() => setFilterPeriod('lastWeek')}
+                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                            filterPeriod === 'lastWeek'
+                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                        }`}
+                    >
+                        Last Week
+                    </button>
+                    <button
+                        onClick={() => setFilterPeriod('all')}
+                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                            filterPeriod === 'all'
+                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                        }`}
+                    >
+                        Current Month
+                    </button>
+                </div>
+            </div>
+
+            {/* Bar Chart */}
+            <div className="h-80 bg-white rounded-xl p-6 border border-slate-100">
+                {loading ? (
+                    <div className="h-full flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 mx-auto mb-3"></div>
+                            <p className="text-sm text-slate-500">Loading chart data...</p>
+                        </div>
+                    </div>
+                ) : error ? (
+                    <div className="h-full flex items-center justify-center text-center">
+                        <div>
+                            <p className="text-sm font-medium text-red-600">{error}</p>
+                            <button
+                                onClick={() => setRefreshKey((prev) => prev + 1)}
+                                className="mt-3 px-4 py-2 text-sm rounded-lg bg-red-50 text-red-700 hover:bg-red-100"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                ) : values.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-sm text-slate-500">
+                        No bookings found for selected period.
+                    </div>
+                ) : (
+                    <div className="flex items-end justify-center h-full space-x-1">
+                        {values.map((bookingCount, index) => (
+                            <div key={`${labels[index]}-${index}`} className="flex flex-col items-center flex-1">
+                                <div className="w-full flex flex-col items-center justify-end h-64">
+                                    <div
+                                        className="w-20 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg shadow-md hover:from-blue-600 hover:to-blue-500 transition-all duration-200 cursor-pointer group relative"
+                                        style={{ height: `${(bookingCount / yAxisMax) * 100}%` }}
+                                    >
+                                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-2 py-1 rounded text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                            {bookingCount}
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className="text-sm font-semibold text-slate-700 text-center mt-4">
+                                    {labels[index]}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 mt-6">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <p className="text-sm text-blue-600 font-medium">Total Bookings</p>
+                    <p className="text-2xl font-bold text-blue-900 mt-1">
+                        {trendData?.summary.total ?? 0}
+                    </p>
+                </div>
+                <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+                    <p className="text-sm text-emerald-600 font-medium">Average</p>
+                    <p className="text-2xl font-bold text-emerald-900 mt-1">
+                        {trendData?.summary.average ?? 0}
+                    </p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <p className="text-sm text-purple-600 font-medium">Peak</p>
+                    <p className="text-2xl font-bold text-purple-900 mt-1">
+                        {trendData?.summary.peak ?? 0}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
 
